@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#fcf8f4">
+<title>Us — Shreshtha × Muskan</title>
+<meta name="description" content="A private little place for Shreshtha and Muskan.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="grain"></div>
+
+<nav id="nav">
+  <a class="logo" href="#home">S × M</a>
+  <div class="navlinks" id="navlinks">
+    <a href="#story">Us</a><a href="#timeline">Story</a><a href="#gallery">Gallery</a>
+    <a href="#qa">Q&A</a><a href="#countdown">Our Day</a><a href="#letters">Letters</a>
+    <a href="#space">Our Space</a>
+  </div>
+  <div class="nav-actions">
+    <button class="icon-btn" id="themeBtn" title="Day/night">☾</button>
+    <button class="icon-btn" id="authBtn" title="Our Space">♡</button>
+    <button class="navtoggle" id="navtoggle" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<section class="hero" id="home">
+  <div class="hero-content">
+    <div class="eyebrow">A little place, made especially for us</div>
+    <h1>For <span>Muskan.</span></h1>
+    <p class="hero-copy">Some people quietly become a part of your life. And then, somehow, they become a part of your heart.</p>
+    <p class="subcopy">A small corner of the internet for our memories, our silly things, our plans, and everything still waiting to become ours.</p>
+    <div class="hero-actions">
+      <button class="btn primary" data-scroll="#note">A note for you</button>
+      <button class="btn" data-scroll="#gallery">See our memories</button>
+    </div>
+    <button class="scroll" data-scroll="#story">there is more</button>
+  </div>
+</section>
+
+<section class="story" id="story">
+  <div class="story-grid reveal">
+    <div class="photo"></div>
+    <div>
+      <div class="eyebrow">A thought for you</div>
+      <div class="story-copy">Muskan, I’m really looking forward to all the little plans we keep making.</div>
+      <p class="story-small">Our movie dates that somehow take more planning than the movie itself, eating momos together, and those peaceful lakeside walks on the weekends when we can just forget about everything else for a while.<br><br>
+      And whenever we finally decide to go, <strong>I’ll be waiting for you on my Bullet.</strong> Just one request — please wear your jhumka. I have a feeling you’ll look way too beautiful, and I’ll probably forget where I was supposed to take you. ❤️<br><br>
+      These may sound like small things, but honestly, these are the moments I’m looking forward to the most. The simple plans, the spontaneous ones, and all the little adventures that will slowly become <em>our</em> memories.</p>
+    </div>
+  </div>
+</section>
+
+<section class="timeline" id="timeline">
+  <div class="section-head reveal"><div class="eyebrow">How it all began</div><h2>Our story, <em>so far.</em></h2><p>Edit the starter milestones in <code>app.js</code>, or add future ones from Our Space.</p></div>
+  <div class="timeline-list" id="timelineList"></div>
+</section>
+
+<section class="gallery" id="gallery">
+  <div class="section-head reveal"><div class="eyebrow">A few of my favourites</div><h2>Little moments, <em>captured.</em></h2><p>Static favourites are shown here. Logged-in memories from Firebase appear in Our Space.</p></div>
+  <div class="gallery-grid" id="galleryGrid"></div>
+</section>
+
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" id="lbClose">Close ✕</button>
+  <button class="lb-nav lb-prev" id="lbPrev">‹</button><img id="lbImg" alt=""><div class="lb-cap" id="lbCap"></div><button class="lb-nav lb-next" id="lbNext">›</button>
+</div>
+
+<section class="qa" id="qa">
+  <div class="section-head reveal"><div class="eyebrow">Get to know us</div><h2>A little <em>Q&A.</em></h2><p>Tap a card. The answer is on the other side.</p></div>
+  <div class="qa-grid" id="qaGrid"></div>
+</section>
+
+<section class="love-note" id="note">
+  <div class="section-head reveal"><div class="eyebrow">Just because</div><h2>A note <em>for you.</em></h2><p>Every click brings up another little reminder.</p></div>
+  <div class="note-box reveal"><div><div class="note-text" id="noteText"></div><div class="note-meta" id="noteMeta"></div><button class="btn primary" id="newNote">another one ♡</button></div></div>
+</section>
+
+<section class="countdown" id="countdown">
+  <div class="eyebrow">The day we have been waiting for</div><h2>Until <em>22 February 2027</em></h2>
+  <p class="date-label">22 · 02 · 2027 — the beginning of our next chapter</p>
+  <div class="timer"><div class="time-box"><strong id="days">000</strong><span>Days</span></div><div class="time-box"><strong id="hours">00</strong><span>Hours</span></div><div class="time-box"><strong id="minutes">00</strong><span>Minutes</span></div><div class="time-box"><strong id="seconds">00</strong><span>Seconds</span></div></div>
+  <div id="after" class="after">And now, forever begins. ♡</div><div class="mini-counters" id="miniCounters"></div>
+</section>
+
+<section class="letters" id="letters">
+  <div class="section-head"><div class="eyebrow">For you, with all my heart</div><h2>A few words<br><em>I wanted you to know.</em></h2></div>
+  <div class="letter-tabs" id="letterTabs"></div><div id="lettersWrap"></div>
+</section>
+
+<section class="bucket" id="bucket">
+  <div class="section-head reveal"><div class="eyebrow">Someday, together</div><h2>Our <em>bucket list.</em></h2><p>Public checklist for now; the shared live version lives inside Our Space.</p></div>
+  <div class="bucket-grid" id="bucketGrid"></div>
+</section>
+
+<section class="quiz" id="quiz">
+  <div class="section-head reveal"><div class="eyebrow">Okay, let's see</div><h2>How well do you <em>know me?</em></h2><p>A tiny quiz. No pressure. (There is definitely pressure.)</p></div>
+  <div class="quiz-card" id="quizCard"></div>
+</section>
+
+<section class="future" id="future">
+  <div class="section-head reveal"><div class="eyebrow">Things still waiting for us</div><h2>The <em>future.</em></h2><p>The ordinary, extraordinary life I am looking forward to.</p></div>
+  <div class="future-grid">
+    <div class="future-card"><div class="future-icon">🏠</div><h3>Our home</h3><p>A place filled with our things, routines, food, music, and probably too many mugs.</p></div>
+    <div class="future-card"><div class="future-icon">✈️</div><h3>Our travels</h3><p>New cities, long drives, wrong turns, good food, and stories we will tell for years.</p></div>
+    <div class="future-card"><div class="future-icon">🌅</div><h3>Our Sundays</h3><p>Slow mornings, lazy plans, and those days where doing absolutely nothing feels perfect.</p></div>
+  </div>
+</section>
+
+<section class="space" id="space">
+  <div class="section-head"><div class="eyebrow">Private • live • ours</div><h2>Our <em>Space.</em></h2><p>Sign in to add live notes, memories, letters and bucket-list items. Changes sync between both of you in real time.</p></div>
+  <div id="authState" class="space-card"></div>
+  <div id="privateApp" class="private-app hidden">
+    <div class="space-top"><div><div class="eyebrow">Signed in</div><h3 id="whoami">—</h3></div><button class="btn" id="signOutBtn">sign out</button></div>
+    <div class="private-grid">
+      <div class="private-panel">
+        <div class="panel-head"><h3>Live Notes</h3><span id="onlineStatus">● live</span></div>
+        <form id="noteForm" class="inline-form"><input id="noteInput" maxlength="280" placeholder="Leave something for me…"><button class="btn primary">send</button></form>
+        <div id="liveNotes" class="feed"></div>
+      </div>
+      <div class="private-panel">
+        <div class="panel-head"><h3>Shared Bucket List</h3></div>
+        <form id="bucketForm" class="inline-form"><input id="bucketInput" maxlength="120" placeholder="Something we should do…"><button class="btn primary">add</button></form>
+        <div id="liveBucket" class="live-list"></div>
+      </div>
+      <div class="private-panel wide">
+        <div class="panel-head"><h3>Our Memories</h3><span class="muted">Upload a photo + caption</span></div>
+        <form id="memoryForm" class="memory-form">
+          <input id="memoryCaption" maxlength="160" placeholder="What should we remember about this?">
+          <input id="memoryFile" type="file" accept="image/*">
+          <button class="btn primary">upload memory</button>
+        </form>
+        <div id="liveMemories" class="memory-grid"></div>
+      </div>
+      <div class="private-panel wide">
+        <div class="panel-head"><h3>Private Letters</h3><span class="muted">Stored in Firestore</span></div>
+        <form id="letterForm" class="letter-form">
+          <input id="privateLetterTitle" maxlength="80" placeholder="Letter title">
+          <textarea id="privateLetterBody" rows="5" maxlength="5000" placeholder="Write something you want to keep here…"></textarea>
+          <button class="btn primary">save letter</button>
+        </form>
+        <div id="privateLetters" class="private-letters"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="final"><div><div class="eyebrow" style="color:#dfaaad">22 · 02 · 2027</div><h2>To our next chapter,<br><span>and all the ones after.</span></h2><p>May we always be gentle with each other, grateful for each other,<br>and never stop finding reasons to smile together.</p><div class="heart">♥</div></div></section>
+<footer>made with love · Shreshtha × Muskan</footer>
+
+<div class="modal" id="modal"><div class="modal-card">
+  <div class="eyebrow" id="modalEyebrow">Our Space</div><h3 id="modalTitle">Welcome back.</h3><p id="modalText"></p>
+  <button class="btn" id="modalClose">close</button>
+</div></div>
+
+<div class="auth-modal" id="authModal">
+  <div class="auth-card">
+    <button class="modal-x" id="authClose">×</button>
+    <div class="eyebrow">Private • just us</div><h2 id="authTitle">Our Space</h2>
+    <p id="authHelp">Sign in with one of the two accounts you created for this site.</p>
+    <form id="authForm">
+      <input id="authEmail" type="email" autocomplete="email" placeholder="Email address" required>
+      <input id="authPassword" type="password" autocomplete="current-password" placeholder="Password" required>
+      <button class="btn primary" id="authSubmit">sign in</button>
+    </form>
+    <button class="text-btn" id="forgotBtn">Forgot password?</button>
+    <div id="authError" class="auth-error"></div>
+  </div>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /*
+     * IMPORTANT:
+     * Replace the two placeholder emails below with the exact email
+     * addresses you use for the two Firebase Authentication accounts.
+     *
+     * Authentication + these rules are the real protection.
+     * Do not rely on a client-side passphrase.
+     */
+    function isUs() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in [
+          "YOUR_EMAIL@example.com",
+          "MUSKAN_EMAIL@example.com"
+        ];
+    }
+
+    match /notes/{noteId} {
+      allow read: if isUs();
+      allow create: if isUs()
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() <= 280;
+      allow update, delete: if isUs();
+    }
+
+    match /bucketItems/{itemId} {
+      allow read: if isUs();
+      allow create: if isUs()
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() <= 120;
+      allow update, delete: if isUs();
+    }
+
+    match /memories/{memoryId} {
+      allow read: if isUs();
+      allow create: if isUs()
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.url is string
+        && request.resource.data.storagePath is string;
+      allow update, delete: if isUs();
+    }
+
+    match /privateLetters/{letterId} {
+      allow read: if isUs();
+      allow create: if isUs()
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.title is string
+        && request.resource.data.body is string
+        && request.resource.data.title.size() <= 80
+        && request.resource.data.body.size() <= 5000;
+      allow update, delete: if isUs();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
