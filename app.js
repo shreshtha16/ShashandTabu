@@ -63,11 +63,6 @@ const LETTERS=[
  ],sign:"With all my love,<br>Shreshtha ♡"},
  {date:"A future letter",dear:"Dear Muskan,",body:["This is a blank space for a future version of me to write to you.","Maybe I will add it after a trip, on an ordinary Tuesday, or on a day when I suddenly feel grateful for how much life has changed.","Until then, this little letter is waiting for us."],sign:"Still choosing you,<br>Shreshtha ♡"}
 ];
-const MINI_DATES=[
- ["Next date night","2026-08-31T20:00:00+05:30"],
- ["Next trip","2026-09-23T08:00:00+05:30"],
- ["Our first anniversary","2027-02-22T00:00:00+05:30"]
-];
 const BUCKET_PUBLIC=[
  "Take a road trip with no fixed itinerary","Watch a sunrise together","Go somewhere neither of us has been",
  "Cook an entire dinner together","Take the same photo every anniversary","Have a completely spontaneous weekend",
@@ -105,8 +100,6 @@ const wedding=new Date("2027-02-22T00:00:00+05:30").getTime();
 function countdown(){const d=wedding-Date.now();if(d<=0){["days","hours","minutes","seconds"].forEach(x=>document.getElementById(x).textContent="00");document.getElementById("after").style.display="block";return}
 days.textContent=String(Math.floor(d/86400000)).padStart(3,"0");hours.textContent=String(Math.floor(d/3600000)%24).padStart(2,"0");minutes.textContent=String(Math.floor(d/60000)%60).padStart(2,"0");seconds.textContent=String(Math.floor(d/1000)%60).padStart(2,"0")}
 countdown();setInterval(countdown,1000);
-function mini(){miniCounters.innerHTML=MINI_DATES.map(x=>{const d=Math.max(0,Math.ceil((new Date(x[1])-Date.now())/86400000));return `<div class="mini-counter"><div class="mc-label">${x[0]}</div><div class="mc-val">${d} day${d===1?"":"s"}</div></div>`}).join("")}
-mini();setInterval(mini,60000);
 
 timelineList.innerHTML=[
  ["The beginning","How we met","Write the real story here — where you were, what happened, and what you noticed first."],
