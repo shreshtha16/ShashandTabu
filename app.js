@@ -94,8 +94,8 @@ document.getElementById("navtoggle").onclick=()=>document.getElementById("navlin
 document.querySelectorAll("#navlinks a").forEach(a=>a.onclick=()=>document.getElementById("navlinks").classList.remove("open"));
 
 function theme(){
- const saved=localStorage.getItem("us-theme"); const h=new Date().getHours();
- const night=saved?saved==="night":h>=19||h<7; document.body.classList.toggle("night",night);
+ const saved=localStorage.getItem("us-theme");
+ const night=saved?saved==="night":true; document.body.classList.toggle("night",night);
  document.getElementById("themeBtn").textContent=night?"☀":"☾";
 }
 theme(); document.getElementById("themeBtn").onclick=()=>{const n=!document.body.classList.contains("night");document.body.classList.toggle("night",n);localStorage.setItem("us-theme",n?"night":"day");document.getElementById("themeBtn").textContent=n?"☀":"☾"};
