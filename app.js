@@ -3,12 +3,15 @@ import {
   getAuth, onAuthStateChanged, signInWithEmailAndPassword, sendPasswordResetEmail, signOut
 } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 import {
-  getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, query, orderBy,
+  getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, setDoc, deleteField, query, orderBy,
   onSnapshot, serverTimestamp, limit
 } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 import {
   getStorage, ref, uploadBytes, getDownloadURL
 } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-storage.js";
+import {
+  getMessaging, getToken, onMessage
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-messaging.js";
 
 /*
  * Firebase configuration supplied for the Shreshtha × Muskan project.
@@ -28,18 +31,24 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 const storage=getStorage(app);
+const messaging=getMessaging(app);
+const FCM_VAPID_KEY="REPLACE_WITH_FIREBASE_WEB_PUSH_CERTIFICATE_KEY";
 
 const STATIC_PHOTOS=[
  {src:"DSC_6602.jpeg",cap:"One of my favourites."},
- {src:"",cap:"Add another memory."},{src:"",cap:"A moment I want to remember."},
- {src:"",cap:"Another little piece of us."},{src:"",cap:"The kind of day I want more of."},{src:"",cap:"More memories coming soon."}
+ {src:"DSC_6452.jpeg",cap:"A little celebration together."},
+ {src:"DSC_6453.jpeg",cap:"Laughing through the little moments."},
+ {src:"DSC_6473.jpeg",cap:"Dressed up and feeling lucky."},
+ {src:"DSC_6570.jpeg",cap:"Another beautiful memory of us."},
+ {src:"1c8cae48-baee-47b4-aa78-d77f6667baa0.jpeg",cap:"A little sunflower made with love."},
+ {src:"IMG_0475.jpeg",cap:"A soft little moment to remember."}
 ];
 const QAS=[
- {q:"First thing I noticed about her?",a:"Write the real answer here."},
- {q:"Our song?",a:"Put your song here."},{q:"Best memory together so far?",a:"Write the memory you would choose."},
- {q:"Where do we go on a lazy Sunday?",a:"Momos, a lakeside walk, and probably no real plan."},
- {q:"What does “Tabu” mean?",a:"A silly nickname that somehow became something only ours."},
- {q:"One thing I'm looking forward to?",a:"22 · 02 · 2027 — and every ordinary day after it."}
+ {q:"First thing I noticed about her?",a:"Her calmness. And her eyes."},
+ {q:"Our song?",a:"Tere Bina Na Guzara."},{q:"Best memory together so far?",a:"Our roka photo session, followed by chai in a hotel room."},
+ {q:"Where do we go on a lazy Sunday?",a:"Adrak wali chai, with a slow song playing in the background."},
+ {q:"What does “Tabu” mean?",a:"It is short for Tabassum, which means smile — or Muskan."},
+ {q:"One thing I'm looking forward to?",a:"Travelling around the world together."}
 ];
 const LOVE_NOTES=[
  ["I still think I got very lucky when I found you.","A little reminder"],
@@ -61,7 +70,8 @@ const LETTERS=[
  "I cannot promise that every day will be perfect. But I can promise to keep listening, keep learning, keep caring, and keep choosing you — gently and sincerely, every day.",
  "Thank you for becoming such a beautiful part of my life. I'm truly looking forward to starting this beautiful new chapter of our lives together."
  ],sign:"With all my love,<br>Shreshtha ♡"},
- {date:"A future letter",dear:"Dear Muskan,",body:["This is a blank space for a future version of me to write to you.","Maybe I will add it after a trip, on an ordinary Tuesday, or on a day when I suddenly feel grateful for how much life has changed.","Until then, this little letter is waiting for us."],sign:"Still choosing you,<br>Shreshtha ♡"}
+ {date:"A future letter",dear:"Dear Muskan,",body:["This is a blank space for a future version of me to write to you.","Maybe I will add it after a trip, on an ordinary Tuesday, or on a day when I suddenly feel grateful for how much life has changed.","Until then, this little letter is waiting for us."],sign:"Yours, in every chapter,<br>Shreshtha ♡"}
+ ,{date:"A little closer",daysBeforeWedding:180,dear:"Dear Muskan,",body:["This letter unlocks as our next chapter gets closer.","There is still time before our day, but every day between now and then is part of the story too."],sign:"Counting down with you,<br>Shreshtha ♡"}
 ];
 const BUCKET_PUBLIC=[
  "Take a road trip with no fixed itinerary","Watch a sunrise together","Go somewhere neither of us has been",
@@ -97,14 +107,15 @@ let ni=-1;function note(){let n;do n=Math.floor(Math.random()*LOVE_NOTES.length)
 note();document.getElementById("newNote").onclick=note;
 
 const wedding=new Date("2027-02-22T00:00:00+05:30").getTime();
+function daysToWedding(){return Math.max(0,Math.ceil((wedding-Date.now())/86400000))}
 function countdown(){const d=wedding-Date.now();if(d<=0){["days","hours","minutes","seconds"].forEach(x=>document.getElementById(x).textContent="00");document.getElementById("after").style.display="block";return}
 days.textContent=String(Math.floor(d/86400000)).padStart(3,"0");hours.textContent=String(Math.floor(d/3600000)%24).padStart(2,"0");minutes.textContent=String(Math.floor(d/60000)%60).padStart(2,"0");seconds.textContent=String(Math.floor(d/1000)%60).padStart(2,"0")}
 countdown();setInterval(countdown,1000);
 
 timelineList.innerHTML=[
- ["The beginning","How we met","Write the real story here — where you were, what happened, and what you noticed first."],
- ["A turning point","The first “us” moment","The moment it stopped feeling like just talking and started feeling like something real."],
- ["Today","Where we are now","Planning a life together, one lakeside walk and one bad singing session at a time."]
+ ["The beginning","How we met","I first saw her at a wedding, when Mousi ji introduced us over dinner. She was the prettiest girl there."],
+ ["A turning point","The first “us” moment","When we first spoke over a call, I was nervous and did not know what to say. After the roka, I started thinking about her all day, losing my appetite and sleep. Then I wondered: is it loveria? My doctor was the culprit, and I was the patient."],
+ ["Today","Where we are now","My day begins with your good-morning message, and your sunflower brightens everything that follows. I love our calls where we jam and sing together, our shared love for momos, calling you “Tabuaaa” and “Kuchu-puchu,” and making you a warm cup of adrak wali chai every morning. These little things have become an important part of us."]
 ].map((x,i)=>`<div class="moment reveal"><div class="dot">${i+1}</div><div><div class="label">${x[0]}</div><h3>${x[1]}</h3><p>${x[2]}</p></div></div>`).join("");
 document.querySelectorAll(".moment.reveal").forEach(x=>io.observe(x));
 
@@ -113,16 +124,23 @@ let lb=0;function openLB(i){if(!STATIC_PHOTOS[i].src)return;lb=i;lbImg.src=STATI
 galleryGrid.onclick=e=>{const x=e.target.closest(".gallery-item");if(x)openLB(+x.dataset.i)};lbClose.onclick=()=>lightbox.classList.remove("open");lbPrev.onclick=()=>openLB((lb-1+STATIC_PHOTOS.length)%STATIC_PHOTOS.length);lbNext.onclick=()=>openLB((lb+1)%STATIC_PHOTOS.length);lightbox.onclick=e=>{if(e.target===lightbox)lightbox.classList.remove("open")};
 
 qaGrid.innerHTML=QAS.map((x,i)=>`<div class="qa-card"><div class="qa-inner"><div class="qa-face qa-front"><div class="q-label">Question ${i+1}</div><h4>${x.q}</h4><div class="tap">tap to reveal</div></div><div class="qa-face qa-back"><p>${x.a}</p></div></div></div>`).join("");
-document.querySelectorAll(".qa-card").forEach(x=>x.onclick=()=>x.classList.toggle("flipped"));
+const ourSong=document.getElementById("ourSong");
+document.querySelectorAll(".qa-card").forEach(x=>x.onclick=()=>{x.classList.toggle("flipped");if(x.querySelector("h4")?.textContent==="Our song?"){if(ourSong.paused){ourSong.play().then(()=>x.classList.add("playing")).catch(()=>x.classList.remove("playing"))}else{ourSong.pause();x.classList.remove("playing")}}});
+ourSong.onended=()=>document.querySelector(".qa-card .qa-front h4")?.textContent==="Our song?"&&document.querySelector(".qa-card:has(.qa-front h4)")?.classList.remove("playing");
 
-letterTabs.innerHTML=LETTERS.map((x,i)=>`<button class="letter-tab ${i?"":"active"}" data-i="${i}">${x.date}</button>`).join("");
-lettersWrap.innerHTML=LETTERS.map((x,i)=>`<div class="letter ${i?"":"active"}" data-i="${i}"><div class="letter-date">${x.date}</div><p class="dear">${x.dear}</p>${x.body.map(p=>`<p>${p}</p>`).join("")}<div class="signature">${x.sign}</div></div>`).join("");
-letterTabs.onclick=e=>{const b=e.target.closest(".letter-tab");if(!b)return;document.querySelectorAll(".letter-tab").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".letter").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelector(`.letter[data-i="${b.dataset.i}"]`).classList.add("active")};
+function letterUnlocked(letter){return letter.daysBeforeWedding==null||daysToWedding()<=letter.daysBeforeWedding}
+function unlockDate(letter){return new Date(wedding-letter.daysBeforeWedding*86400000).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}
+function renderLetters(){const first=LETTERS.findIndex(letterUnlocked);letterTabs.innerHTML=LETTERS.map((x,i)=>{const unlocked=letterUnlocked(x);return `<button class="letter-tab ${i===first?"active":""} ${unlocked?"":"locked"}" data-i="${i}" ${unlocked?"":"disabled"}>${unlocked?"":"🔒 "}${x.date}${unlocked?"":`<small>Unlocks ${unlockDate(x)}</small>`}</button>`}).join("");lettersWrap.innerHTML=LETTERS.map((x,i)=>letterUnlocked(x)?`<div class="letter ${i===first?"active":""}" data-i="${i}"><div class="letter-date">${x.date}</div><p class="dear">${x.dear}</p>${x.body.map(p=>`<p>${p}</p>`).join("")}<div class="signature">${x.sign}</div></div>`:"").join("")}
+renderLetters();
+letterTabs.onclick=e=>{const b=e.target.closest(".letter-tab");if(!b||b.disabled)return;document.querySelectorAll(".letter-tab").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".letter").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelector(`.letter[data-i="${b.dataset.i}"]`)?.classList.add("active")};
 
 let publicBucket=JSON.parse(localStorage.getItem("public-bucket")||"{}");
 function renderPublicBucket(){bucketGrid.innerHTML=BUCKET_PUBLIC.map((x,i)=>`<div class="bucket-item ${publicBucket[i]?"done":""}" data-i="${i}"><div class="bucket-check">${publicBucket[i]?"✓":""}</div><div class="bucket-text">${x}<span class="bucket-date">${publicBucket[i]?"Completed ♡":"Not yet..."}</span></div></div>`).join("");document.querySelectorAll("#bucketGrid .bucket-item").forEach(x=>x.onclick=()=>{publicBucket[x.dataset.i]=!publicBucket[x.dataset.i];localStorage.setItem("public-bucket",JSON.stringify(publicBucket));renderPublicBucket()})}renderPublicBucket();
 
 let qi=0,qs=0;function quiz(){if(qi>=QUIZ.length){const pct=qs/QUIZ.length*100;quizCard.innerHTML=`<div class="eyebrow">Final score</div><div class="quiz-score">${qs}/${QUIZ.length}</div><p>${pct===100?"Okay, you know me suspiciously well. ❤️":pct>=60?"Not bad, Tabu. I’ll allow it. 😌":"We clearly need more dates. 😂"}</p><button class="btn primary" id="restart">try again</button>`;restart.onclick=()=>{qi=0;qs=0;quiz();};return}const q=QUIZ[qi];quizCard.innerHTML=`<div class="quiz-progress">Question ${qi+1} of ${QUIZ.length}</div><div class="quiz-question">${q[0]}</div><div class="quiz-options">${q[1].map((o,i)=>`<button class="quiz-option" data-i="${i}">${o}</button>`).join("")}</div>`;document.querySelectorAll(".quiz-option").forEach(b=>b.onclick=()=>{if(+b.dataset.i===q[2])qs++;qi++;quiz()})}quiz();
+
+function shuffle(){const choice=Math.floor(Math.random()*4);if(choice===0){const cards=document.querySelectorAll(".qa-card");const card=cards[Math.floor(Math.random()*cards.length)];card.classList.add("flipped");card.scrollIntoView({behavior:"smooth",block:"center"})}else if(choice===1){note();document.getElementById("note").scrollIntoView({behavior:"smooth"})}else if(choice===2){const photos=STATIC_PHOTOS.map((x,i)=>x.src?i:null).filter(x=>x!=null);if(photos.length)openLB(photos[Math.floor(Math.random()*photos.length)]);else document.getElementById("gallery").scrollIntoView({behavior:"smooth"})}else{const items=document.querySelectorAll("#bucketGrid .bucket-item");const item=items[Math.floor(Math.random()*items.length)];item?.scrollIntoView({behavior:"smooth",block:"center"});item?.classList.add("shuffle-highlight");setTimeout(()=>item?.classList.remove("shuffle-highlight"),1800)}}
+document.getElementById("shuffleBtn").onclick=shuffle;
 
 const modal=document.getElementById("modal");document.getElementById("modalClose").onclick=()=>modal.classList.remove("open");
 
@@ -163,15 +181,19 @@ onAuthStateChanged(auth,user=>{
  authModal.classList.remove("open");privateApp.classList.remove("hidden");
  authState.innerHTML=`<div class="eyebrow">Connected to Firebase</div><h3>Welcome, ${escapeHTML(safeName(user))}.</h3><p>You're signed in. Both approved accounts share this space.</p>`;
  whoami.textContent=safeName(user);
+ showFeedSkeletons();
+ setupMessaging(user);
  subscribeNotes(user);subscribeBucket(user);subscribeMemories(user);subscribeLetters(user);
 });
 
 function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function skeletonRows(className,count=3){return Array.from({length:count},()=>`<div class="skeleton-row ${className}"></div>`).join("")}
+function showFeedSkeletons(){liveNotes.innerHTML=skeletonRows("note-skeleton");liveBucket.innerHTML=skeletonRows("bucket-skeleton",2);liveMemories.innerHTML=skeletonRows("memory-skeleton",3);privateLetters.innerHTML=skeletonRows("letter-skeleton",2);onThisDay.innerHTML=""}
 
 /* ================= Firestore: live notes ================= */
 function subscribeNotes(user){
  const q=query(collection(db,"notes"),orderBy("createdAt","desc"),limit(50));
- const u=onSnapshot(q,snap=>{liveNotes.innerHTML=snap.docs.map(d=>{const x=d.data();return `<div class="feed-item"><div class="meta">${escapeHTML(x.authorName||"Us")} · ${fmtDate(x.createdAt)}</div><p>${escapeHTML(x.text||"")}</p></div>`}).join("")||`<div class="muted">No notes yet. Leave the first one. ♡</div>`},err=>showPrivateError(err));
+ const u=onSnapshot(q,snap=>{liveNotes.innerHTML=snap.docs.map(d=>{const x=d.data(),reactions=x.reactions||{},reacted=!!reactions[user.uid],count=Object.keys(reactions).length;return `<div class="feed-item"><div class="meta">${escapeHTML(x.authorName||"Us")} · ${fmtDate(x.createdAt)}</div><p>${escapeHTML(x.text||"")}</p><button class="reaction ${reacted?"reacted":""}" data-note-reaction="${d.id}">♡ <span>${count}</span></button></div>`}).join("")||`<div class="muted">No notes yet. Leave the first one. ♡</div>`;liveNotes.querySelectorAll("[data-note-reaction]").forEach(b=>b.onclick=async()=>{const active=b.classList.contains("reacted");try{await updateDoc(doc(db,"notes",b.dataset.noteReaction),{[`reactions.${user.uid}`]:active?deleteField():true})}catch(err){showPrivateError(err)}})},err=>showPrivateError(err));
  unsubscribers.push(u);
 }
 noteForm.onsubmit=async e=>{e.preventDefault();if(!auth.currentUser||!noteInput.value.trim())return;try{await addDoc(collection(db,"notes"),{text:noteInput.value.trim(),authorUid:auth.currentUser.uid,authorName:safeName(auth.currentUser),createdAt:serverTimestamp()});noteInput.value=""}catch(err){showPrivateError(err)}};
@@ -189,8 +211,9 @@ bucketForm.onsubmit=async e=>{e.preventDefault();if(!auth.currentUser||!bucketIn
 /* ================= Storage + Firestore: memories ================= */
 function subscribeMemories(){
  const q=query(collection(db,"memories"),orderBy("createdAt","desc"),limit(50));
- const u=onSnapshot(q,snap=>{liveMemories.innerHTML=snap.docs.map(d=>{const x=d.data();return `<div class="memory-card"><img src="${escapeAttr(x.url)}" alt=""><div class="memory-caption">${escapeHTML(x.caption||"")}</div><div class="memory-meta">${escapeHTML(x.authorName||"Us")} · ${fmtDate(x.createdAt)}</div></div>`}).join("")||`<div class="muted">No shared memories uploaded yet.</div>`},showPrivateError);unsubscribers.push(u);
+ const u=onSnapshot(q,snap=>{const memories=snap.docs.map(d=>({id:d.id,...d.data()}));const now=new Date(),today=memories.filter(x=>{const date=x.createdAt?.toDate?.();return date&&date.getFullYear()<now.getFullYear()&&date.getMonth()===now.getMonth()&&date.getDate()===now.getDate()});onThisDay.innerHTML=today.length?`<div class="on-this-day-head">On this day</div><div class="on-this-day-grid">${today.map(memoryCard).join("")}</div>`:"";liveMemories.innerHTML=memories.map(memoryCard).join("")||`<div class="muted">No shared memories uploaded yet.</div>`},showPrivateError);unsubscribers.push(u);
 }
+function memoryCard(x){return `<div class="memory-card"><img src="${escapeAttr(x.url)}" alt=""><div class="memory-caption">${escapeHTML(x.caption||"")}</div><div class="memory-meta">${escapeHTML(x.authorName||"Us")} · ${fmtDate(x.createdAt)}</div></div>`}
 memoryForm.onsubmit=async e=>{
  e.preventDefault();const file=memoryFile.files[0];if(!auth.currentUser||!file)return;
  if(!file.type.startsWith("image/")){showPrivateError({message:"Please choose an image file."});return}
@@ -215,6 +238,8 @@ letterForm.onsubmit=async e=>{e.preventDefault();if(!auth.currentUser||!privateL
 function fmtDate(ts){if(!ts?.toDate)return "just now";return ts.toDate().toLocaleString("en-IN",{day:"numeric",month:"short",year:"numeric",hour:"numeric",minute:"2-digit"})}
 function escapeAttr(s){return String(s||"").replace(/"/g,"&quot;").replace(/</g,"%3C").replace(/>/g,"%3E")}
 function showPrivateError(err){modalTitle.textContent="Something went wrong";modalText.textContent=err?.message||"Firebase returned an error. Check your Firebase setup and Security Rules.";modal.classList.add("open")}
+
+async function setupMessaging(user){const button=document.getElementById("enableNotifications");if(!("Notification" in window)||!navigator.serviceWorker){button.disabled=true;return}button.onclick=async()=>{if(FCM_VAPID_KEY.startsWith("REPLACE_")){showPrivateError({message:"Add your Firebase Web Push certificate key in app.js first."});return}try{const permission=await Notification.requestPermission();if(permission!=="granted")return;const registration=await navigator.serviceWorker.register("firebase-messaging-sw.js");const token=await getToken(messaging,{vapidKey:FCM_VAPID_KEY,serviceWorkerRegistration:registration});await setDoc(doc(db,"notificationTokens",user.uid),{uid:user.uid,token,updatedAt:serverTimestamp()});button.textContent="notifications enabled"}catch(err){showPrivateError(err)}};onMessage(messaging,payload=>{const title=payload.notification?.title||"A note from us";new Notification(title,{body:payload.notification?.body||"You have a new note."})})}
 
 /* Easter egg */
 let typed="";addEventListener("keydown",e=>{if(e.key.length!==1)return;typed=(typed+e.key.toLowerCase()).slice(-4);if(typed==="tabu")fireConfetti()});

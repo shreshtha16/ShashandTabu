@@ -47,13 +47,14 @@
       <div class="story-copy">Muskan, I’m really looking forward to all the little plans we keep making.</div>
       <p class="story-small">Our movie dates that somehow take more planning than the movie itself, eating momos together, and those peaceful lakeside walks on the weekends when we can just forget about everything else for a while.<br><br>
       And whenever we finally decide to go, <strong>I’ll be waiting for you on my Bullet.</strong> Just one request — please wear your jhumka. I have a feeling you’ll look way too beautiful, and I’ll probably forget where I was supposed to take you. ❤️<br><br>
-      These may sound like small things, but honestly, these are the moments I’m looking forward to the most. The simple plans, the spontaneous ones, and all the little adventures that will slowly become <em>our</em> memories.</p>
+      These may sound like small things, but honestly, these are the moments I’m looking forward to the most. The simple plans, the spontaneous ones, and all the little adventures that will slowly become <em>our</em> memories.<br><br>
+      My day begins with your good-morning message, and your sunflower brightens everything that follows. I love our calls where we jam and sing together, our shared love for momos, calling you “Tabuaaa” and “Kuchu-puchu,” and making you a warm cup of adrak wali chai every morning. These little things have become an important part of us.</p>
     </div>
   </div>
 </section>
 
 <section class="timeline" id="timeline">
-  <div class="section-head reveal"><div class="eyebrow">How it all began</div><h2>Our story <em>so far.</em></h2><p>Edit the starter milestones in <code>app.js</code>, or add future ones from Our Space.</p></div>
+  <div class="section-head reveal"><div class="eyebrow">How it all began</div><h2>Our story <em>so far.</em></h2><p>I first saw her at a wedding, when Mousi ji introduced us over dinner. She was the prettiest girl there.</p></div>
   <div class="timeline-list" id="timelineList"></div>
 </section>
 
@@ -66,6 +67,7 @@
   <button class="lb-close" id="lbClose">Close ✕</button>
   <button class="lb-nav lb-prev" id="lbPrev">‹</button><img id="lbImg" alt=""><div class="lb-cap" id="lbCap"></div><button class="lb-nav lb-next" id="lbNext">›</button>
 </div>
+<audio id="ourSong" src="tere-bina-na-guzara.mp3" preload="none"></audio>
 
 <section class="qa" id="qa">
   <div class="section-head reveal"><div class="eyebrow">Get to know us</div><h2>A little <em>Q&A.</em></h2><p>Tap a card. The answer is on the other side.</p></div>
@@ -112,17 +114,17 @@
   <div class="section-head"><div class="eyebrow">Private • live • ours</div><h2>Our <em>Space.</em></h2><p>Sign in to add live notes, memories, letters and bucket-list items. Changes sync between both of you in real time.</p></div>
   <div id="authState" class="space-card"></div>
   <div id="privateApp" class="private-app hidden">
-    <div class="space-top"><div><div class="eyebrow">Signed in</div><h3 id="whoami">—</h3></div><button class="btn" id="signOutBtn">sign out</button></div>
+    <div class="space-top"><div><div class="eyebrow">Signed in</div><h3 id="whoami">—</h3></div><div class="space-actions"><button class="btn" id="enableNotifications">enable notifications</button><button class="btn" id="signOutBtn">sign out</button></div></div>
     <div class="private-grid">
       <div class="private-panel">
         <div class="panel-head"><h3>Live Notes</h3><span id="onlineStatus">● live</span></div>
         <form id="noteForm" class="inline-form"><input id="noteInput" maxlength="280" placeholder="Leave something for me…"><button class="btn primary">send</button></form>
-        <div id="liveNotes" class="feed"></div>
+        <div id="liveNotes" class="feed"><div class="skeleton-row note-skeleton"></div><div class="skeleton-row note-skeleton"></div><div class="skeleton-row note-skeleton"></div></div>
       </div>
       <div class="private-panel">
         <div class="panel-head"><h3>Shared Bucket List</h3></div>
         <form id="bucketForm" class="inline-form"><input id="bucketInput" maxlength="120" placeholder="Something we should do…"><button class="btn primary">add</button></form>
-        <div id="liveBucket" class="live-list"></div>
+        <div id="liveBucket" class="live-list"><div class="skeleton-row bucket-skeleton"></div><div class="skeleton-row bucket-skeleton"></div></div>
       </div>
       <div class="private-panel wide">
         <div class="panel-head"><h3>Our Memories</h3><span class="muted">Upload a photo + caption</span></div>
@@ -131,7 +133,7 @@
           <input id="memoryFile" type="file" accept="image/*">
           <button class="btn primary">upload memory</button>
         </form>
-        <div id="liveMemories" class="memory-grid"></div>
+        <div id="onThisDay" class="on-this-day"></div><div id="liveMemories" class="memory-grid"><div class="skeleton-row memory-skeleton"></div><div class="skeleton-row memory-skeleton"></div><div class="skeleton-row memory-skeleton"></div></div>
       </div>
       <div class="private-panel wide">
         <div class="panel-head"><h3>Private Letters</h3><span class="muted">Stored in Firestore</span></div>
@@ -140,7 +142,7 @@
           <textarea id="privateLetterBody" rows="5" maxlength="5000" placeholder="Write something you want to keep here…"></textarea>
           <button class="btn primary">save letter</button>
         </form>
-        <div id="privateLetters" class="private-letters"></div>
+        <div id="privateLetters" class="private-letters"><div class="skeleton-row letter-skeleton"></div><div class="skeleton-row letter-skeleton"></div></div>
       </div>
     </div>
   </div>
@@ -148,6 +150,7 @@
 
 <section class="final"><div><div class="eyebrow" style="color:#dfaaad">22 · 02 · 2027</div><h2>To our next chapter,<br><span>and all the ones after.</span></h2><p>May we always be gentle with each other, grateful for each other,<br>and never stop finding reasons to smile together.</p><div class="heart">♥</div></div></section>
 <footer>made with love · Shreshtha × Muskan</footer>
+<button class="shuffle-btn" id="shuffleBtn" title="Surprise me" aria-label="Surprise me">✦</button>
 
 <div class="modal" id="modal"><div class="modal-card">
   <div class="eyebrow" id="modalEyebrow">Our Space</div><h3 id="modalTitle">Welcome back.</h3><p id="modalText"></p>

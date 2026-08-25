@@ -26,7 +26,14 @@ service cloud.firestore {
         && request.resource.data.authorUid == request.auth.uid
         && request.resource.data.text is string
         && request.resource.data.text.size() <= 280;
-      allow update, delete: if isUs();
+      allow update: if isUs()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions'])
+        && request.resource.data.reactions is map
+        && ((!resource.data.keys().hasAny(['reactions'])
+          && request.resource.data.reactions.keys().hasOnly([request.auth.uid]))
+          || (resource.data.keys().hasAny(['reactions'])
+          && request.resource.data.reactions.diff(resource.data.reactions).affectedKeys().hasOnly([request.auth.uid])));
+      allow delete: if isUs();
     }
 
     match /bucketItems/{itemId} {
@@ -56,6 +63,15 @@ service cloud.firestore {
         && request.resource.data.title.size() <= 80
         && request.resource.data.body.size() <= 5000;
       allow update, delete: if isUs();
+    }
+
+    match /notificationTokens/{userId} {
+      allow read: if isUs() && request.auth.uid == userId;
+      allow create, update: if isUs()
+        && request.auth.uid == userId
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.token is string;
+      allow delete: if isUs() && request.auth.uid == userId;
     }
 
     match /{document=**} {
