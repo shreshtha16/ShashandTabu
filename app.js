@@ -32,7 +32,7 @@ const auth=getAuth(app);
 const db=getFirestore(app);
 const storage=getStorage(app);
 const messaging=getMessaging(app);
-const FCM_VAPID_KEY="REPLACE_WITH_FIREBASE_WEB_PUSH_CERTIFICATE_KEY";
+const FCM_VAPID_KEY="BM73UlZ90uLZFfy2JjmAr9hHM1dcaGpenETKOEDtjZx-s8HBdwUf5QP9GVBILlsZX_hu7iebSMUeI-gNfr56WAA";
 
 const STATIC_PHOTOS=[
  {src:"DSC_6602.jpeg",cap:"One of my favourites."},
