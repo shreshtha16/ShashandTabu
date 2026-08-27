@@ -34,6 +34,8 @@ const storage=getStorage(app);
 const messaging=getMessaging(app);
 const FCM_VAPID_KEY="BM73UlZ90uLZFfy2JjmAr9hHM1dcaGpenETKOEDtjZx-s8HBdwUf5QP9GVBILlsZX_hu7iebSMUeI-gNfr56WAA";
 
+if("serviceWorker" in navigator)navigator.serviceWorker.register("./firebase-messaging-sw.js").catch(()=>{});
+
 const STATIC_PHOTOS=[
  {src:"DSC_6602.jpeg",cap:"One of my favourites."},
  {src:"DSC_6452.jpeg",cap:"A little celebration together."},
