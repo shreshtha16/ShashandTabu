@@ -16,8 +16,10 @@ service firebase.storage {
       allow read: if isUs();
       allow write: if isUs()
         && request.auth.uid == userId
-        && request.resource.size < 8 * 1024 * 1024
-        && request.resource.contentType.matches('image/.*');
+        && (request.resource == null || (
+             request.resource.size < 8 * 1024 * 1024
+             && request.resource.contentType.matches('image/.*')
+           ));
     }
 
     match /{allPaths=**} {

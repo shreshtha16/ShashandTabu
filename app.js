@@ -7,7 +7,7 @@ import {
   onSnapshot, serverTimestamp, limit
 } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 import {
-  getStorage, ref, uploadBytes, getDownloadURL
+  getStorage, ref, uploadBytes, getDownloadURL, deleteObject
 } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-storage.js";
 import {
   getMessaging, getToken, onMessage
@@ -203,7 +203,7 @@ noteForm.onsubmit=async e=>{e.preventDefault();if(!auth.currentUser||!noteInput.
 /* ================= Firestore: shared bucket ================= */
 function subscribeBucket(){
  const q=query(collection(db,"bucketItems"),orderBy("createdAt","desc"),limit(100));
- const u=onSnapshot(q,snap=>{liveBucket.innerHTML=snap.docs.map(d=>{const x=d.data();return `<div class="live-bucket"><input type="checkbox" ${x.done?"checked":""} data-bucket="${d.id}"><span>${escapeHTML(x.text||"")}</span><button data-delete-bucket="${d.id}">delete</button></div>`}).join("")||`<div class="muted">Add your first thing to do together.</div>`;
+ const u=onSnapshot(q,snap=>{liveBucket.innerHTML=snap.docs.map(d=>{const x=d.data();return `<div class="live-bucket"><input type="checkbox" ${x.done?"checked":""} data-bucket="${d.id}"><span>${escapeHTML(x.text||"")}</span><button class="delete-btn" data-delete-bucket="${d.id}" aria-label="Delete item">✕</button></div>`}).join("")||`<div class="muted">Add your first thing to do together.</div>`;
  liveBucket.querySelectorAll("[data-bucket]").forEach(c=>c.onchange=()=>updateDoc(doc(db,"bucketItems",c.dataset.bucket),{done:c.checked}));
  liveBucket.querySelectorAll("[data-delete-bucket]").forEach(b=>b.onclick=()=>deleteDoc(doc(db,"bucketItems",b.dataset.deleteBucket)));
  },showPrivateError);unsubscribers.push(u);
@@ -213,9 +213,36 @@ bucketForm.onsubmit=async e=>{e.preventDefault();if(!auth.currentUser||!bucketIn
 /* ================= Storage + Firestore: memories ================= */
 function subscribeMemories(){
  const q=query(collection(db,"memories"),orderBy("createdAt","desc"),limit(50));
- const u=onSnapshot(q,snap=>{const memories=snap.docs.map(d=>({id:d.id,...d.data()}));const now=new Date(),today=memories.filter(x=>{const date=x.createdAt?.toDate?.();return date&&date.getFullYear()<now.getFullYear()&&date.getMonth()===now.getMonth()&&date.getDate()===now.getDate()});onThisDay.innerHTML=today.length?`<div class="on-this-day-head">On this day</div><div class="on-this-day-grid">${today.map(memoryCard).join("")}</div>`:"";liveMemories.innerHTML=memories.map(memoryCard).join("")||`<div class="muted">No shared memories uploaded yet.</div>`},showPrivateError);unsubscribers.push(u);
+ const u=onSnapshot(q,snap=>{
+   const memories=snap.docs.map(d=>({id:d.id,...d.data()}));
+   window.__memoryList = memories;
+   const now=new Date(),today=memories.filter(x=>{const date=x.createdAt?.toDate?.();return date&&date.getFullYear()<now.getFullYear()&&date.getMonth()===now.getMonth()&&date.getDate()===now.getDate()});
+   onThisDay.innerHTML=today.length?`<div class="on-this-day-head">On this day</div><div class="on-this-day-grid">${today.map(memoryCard).join("")}</div>`:"";
+   liveMemories.innerHTML=memories.map(memoryCard).join("")||`<div class="muted">No shared memories uploaded yet.</div>`;
+   attachMemoryDeleteHandlers();
+ },showPrivateError);
+ unsubscribers.push(u);
 }
-function memoryCard(x){return `<div class="memory-card"><img src="${escapeAttr(x.url)}" alt=""><div class="memory-caption">${escapeHTML(x.caption||"")}</div><div class="memory-meta">${escapeHTML(x.authorName||"Us")} · ${fmtDate(x.createdAt)}</div></div>`}
+function memoryCard(x){
+ const canDelete = !!auth.currentUser && auth.currentUser.uid === x.authorUid;
+ return `<div class="memory-card"><img src="${escapeAttr(x.url)}" alt=""><div class="memory-meta-row"><div class="memory-caption">${escapeHTML(x.caption||"")}</div>${canDelete?`<button class="delete-btn memory-delete" data-delete-memory="${escapeAttr(x.id)}" aria-label="Delete memory">✕</button>`:""}</div><div class="memory-meta">${escapeHTML(x.authorName||"Us")} · ${fmtDate(x.createdAt)}</div></div>`
+}
+function attachMemoryDeleteHandlers(){
+ const containers=[onThisDay,liveMemories];
+ containers.forEach(container=>{
+   container?.querySelectorAll("[data-delete-memory]").forEach(button=>{
+     button.onclick=async()=>{
+       const id=button.dataset.deleteMemory;
+       const memory=(window.__memoryList||[]).find(item=>item.id===id);
+       if(!memory||!auth.currentUser)return;
+       try{
+         if(memory.storagePath) await deleteObject(ref(storage,memory.storagePath)).catch(()=>{});
+         await deleteDoc(doc(db,"memories",id));
+       }catch(err){showPrivateError(err)}
+     }
+   })
+ })
+}
 memoryForm.onsubmit=async e=>{
  e.preventDefault();const file=memoryFile.files[0];if(!auth.currentUser||!file)return;
  if(!file.type.startsWith("image/")){showPrivateError({message:"Please choose an image file."});return}
