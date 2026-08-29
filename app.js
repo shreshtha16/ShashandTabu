@@ -221,6 +221,7 @@ memoryForm.onsubmit=async e=>{
  if(!file.type.startsWith("image/")){showPrivateError({message:"Please choose an image file."});return}
  if(file.size>8*1024*1024){showPrivateError({message:"Please keep photos under 8 MB."});return}
  try{
+   await auth.currentUser.getIdToken(true);
    const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
    const path=`memories/${auth.currentUser.uid}/${Date.now()}-${safe}`;
    const storageRef=ref(storage,path);await uploadBytes(storageRef,file,{contentType:file.type});
