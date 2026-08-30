@@ -12,7 +12,10 @@ import {
 import {
   getMessaging, getToken, onMessage
 } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-messaging.js";
-
+import {
+  getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, setDoc, deleteField, query, orderBy,
+  onSnapshot, serverTimestamp, limit, runTransaction
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 /*
  * Firebase configuration supplied for the Shreshtha × Muskan project.
  * Firebase web config values are identifiers, not server credentials.
@@ -186,6 +189,7 @@ onAuthStateChanged(auth,user=>{
  showFeedSkeletons();
  setupMessaging(user);
  subscribeNotes(user);subscribeBucket(user);subscribeMemories(user);subscribeLetters(user);
+ checkStreak(user);
 });
 
 function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -264,6 +268,33 @@ function subscribeLetters(){
  const u=onSnapshot(q,snap=>{privateLetters.innerHTML=snap.docs.map(d=>{const x=d.data();return `<article class="private-letter"><small>${escapeHTML(x.authorName||"Us")} · ${fmtDate(x.createdAt)}</small><h4>${escapeHTML(x.title||"Untitled")}</h4><p>${escapeHTML(x.body||"")}</p></article>`}).join("")||`<div class="muted">No private letters yet.</div>`},showPrivateError);unsubscribers.push(u);
 }
 letterForm.onsubmit=async e=>{e.preventDefault();if(!auth.currentUser||!privateLetterTitle.value.trim()||!privateLetterBody.value.trim())return;try{await addDoc(collection(db,"privateLetters"),{title:privateLetterTitle.value.trim(),body:privateLetterBody.value.trim(),authorUid:auth.currentUser.uid,authorName:safeName(auth.currentUser),createdAt:serverTimestamp()});privateLetterTitle.value="";privateLetterBody.value=""}catch(err){showPrivateError(err)}};
+
+/* ================= Firestore: daily streak ================= */
+function todayKey(){return new Date().toLocaleDateString("en-CA",{timeZone:"Asia/Kolkata"})}
+function daysBetween(a,b){return Math.round((new Date(b)-new Date(a))/86400000)}
+async function checkStreak(user){
+ const streakRef=doc(db,"streaks","shared");
+ try{
+  const result=await runTransaction(db,async tx=>{
+   const snap=await tx.get(streakRef);
+   const today=todayKey();
+   if(!snap.exists()){
+    const data={count:1,lastOpenDate:today,lastOpenedByUid:user.uid,lastOpenedByName:safeName(user),updatedAt:serverTimestamp()};
+    tx.set(streakRef,data);return data;
+   }
+   const x=snap.data();
+   if(x.lastOpenDate===today)return x;
+   const gap=daysBetween(x.lastOpenDate,today);
+   const data={count:gap===1?x.count+1:1,lastOpenDate:today,lastOpenedByUid:user.uid,lastOpenedByName:safeName(user),updatedAt:serverTimestamp()};
+   tx.update(streakRef,data);return data;
+  });
+  renderStreak(result,user);
+ }catch(err){console.error("streak error",err)}
+}
+function renderStreak(x,user){
+ const mine=x.lastOpenedByUid===user.uid;
+ streakBadge.textContent=`🔥 ${x.count} day${x.count===1?"":"s"} streak · ${mine?"you opened first today":x.lastOpenedByName+" opened first today"}`;
+}
 
 function fmtDate(ts){if(!ts?.toDate)return "just now";return ts.toDate().toLocaleString("en-IN",{day:"numeric",month:"short",year:"numeric",hour:"numeric",minute:"2-digit"})}
 function escapeAttr(s){return String(s||"").replace(/"/g,"&quot;").replace(/</g,"%3C").replace(/>/g,"%3E")}

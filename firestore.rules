@@ -74,6 +74,20 @@ service cloud.firestore {
       allow delete: if isUs() && request.auth.uid == userId;
     }
 
+    match /streaks/{streakId} {
+      allow read: if isUs();
+      allow create: if isUs() && streakId == 'shared'
+        && request.resource.data.count == 1
+        && request.resource.data.lastOpenedByUid == request.auth.uid
+        && request.resource.data.lastOpenDate is string;
+      allow update: if isUs() && streakId == 'shared'
+        && request.resource.data.lastOpenedByUid == request.auth.uid
+        && request.resource.data.count is int
+        && request.resource.data.lastOpenDate is string
+        && request.resource.data.lastOpenDate >= resource.data.lastOpenDate;
+      allow delete: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
