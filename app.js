@@ -4,7 +4,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 import {
   getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, setDoc, deleteField, query, orderBy,
-  onSnapshot, serverTimestamp, limit
+  onSnapshot, serverTimestamp, limit, runTransaction
 } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 import {
   getStorage, ref, uploadBytes, getDownloadURL, deleteObject
@@ -12,10 +12,6 @@ import {
 import {
   getMessaging, getToken, onMessage
 } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-messaging.js";
-import {
-  getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, setDoc, deleteField, query, orderBy,
-  onSnapshot, serverTimestamp, limit, runTransaction
-} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 /*
  * Firebase configuration supplied for the Shreshtha × Muskan project.
  * Firebase web config values are identifiers, not server credentials.
