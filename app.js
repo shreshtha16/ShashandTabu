@@ -219,13 +219,23 @@ function subscribeMemories(){
    const now=new Date(),today=memories.filter(x=>{const date=x.createdAt?.toDate?.();return date&&date.getFullYear()<now.getFullYear()&&date.getMonth()===now.getMonth()&&date.getDate()===now.getDate()});
    onThisDay.innerHTML=today.length?`<div class="on-this-day-head">On this day</div><div class="on-this-day-grid">${today.map(memoryCard).join("")}</div>`:"";
    liveMemories.innerHTML=memories.map(memoryCard).join("")||`<div class="muted">No shared memories uploaded yet.</div>`;
+   attachMemoryImageHandlers();
    attachMemoryDeleteHandlers();
  },showPrivateError);
  unsubscribers.push(u);
 }
 function memoryCard(x){
  const canDelete = !!auth.currentUser && auth.currentUser.uid === x.authorUid;
- return `<div class="memory-card"><img src="${escapeAttr(x.url)}" alt=""><div class="memory-meta-row"><div class="memory-caption">${escapeHTML(x.caption||"")}</div>${canDelete?`<button class="delete-btn memory-delete" data-delete-memory="${escapeAttr(x.id)}" aria-label="Delete memory">✕</button>`:""}</div><div class="memory-meta">${escapeHTML(x.authorName||"Us")} · ${fmtDate(x.createdAt)}</div></div>`
+ return `<div class="memory-card"><img src="${escapeAttr(x.url)}" data-memory-path="${escapeAttr(x.storagePath)}" alt=""><div class="memory-meta-row"><div class="memory-caption">${escapeHTML(x.caption||"")}</div>${canDelete?`<button class="delete-btn memory-delete" data-delete-memory="${escapeAttr(x.id)}" aria-label="Delete memory">✕</button>`:""}</div><div class="memory-meta">${escapeHTML(x.authorName||"Us")} · ${fmtDate(x.createdAt)}</div></div>`
+}
+function attachMemoryImageHandlers(){
+ [onThisDay,liveMemories].forEach(container=>container?.querySelectorAll("img[data-memory-path]").forEach(image=>{
+   image.onerror=async()=>{
+     if(image.dataset.retried)return;
+     image.dataset.retried="true";
+     try{image.src=await getDownloadURL(ref(storage,image.dataset.memoryPath))}catch(err){image.closest(".memory-card")?.classList.add("image-missing")}
+   };
+ }));
 }
 function attachMemoryDeleteHandlers(){
  const containers=[onThisDay,liveMemories];
