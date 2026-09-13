@@ -1,0 +1,311 @@
+/* Botanical editorial refresh */
+:root {
+  --paper: #fffdf8;
+  --paper-soft: #f8f3e8;
+  --sage: #6f8c72;
+  --sage-dark: #273f2b;
+  --sage-soft: #dde6d9;
+  --sage-line: rgba(111,140,114,.2);
+  --sage-muted: #9aa891;
+  --clay: #b26b62;
+  --clay-soft: #f4ded8;
+  --butter: #fff6d8;
+  --terracotta: #8b6654;
+  --shadow-soft: rgba(39,63,43,.1);
+}
+
+body {
+  background:
+    radial-gradient(circle at 78% 8%, var(--paper-soft), transparent 19%),
+    radial-gradient(circle at 15% 90%, var(--clay-soft), transparent 20%),
+    var(--paper);
+  color: var(--sage-dark);
+}
+
+body.night {
+  --paper: #202c21;
+  --paper-soft: #18251d;
+  --sage-dark: #edf2e6;
+  --sage-muted: #c7d3b7;
+  --sage-line: rgba(222,236,210,.2);
+  --clay-soft: #50352d;
+}
+
+.navlinks a,
+.logo,
+.section-head h2 em,
+.eyebrow,
+.hero-copy,
+.story-copy,
+.story-small em,
+.moment .label,
+.q-label,
+.quiz-progress,
+.mc-label,
+.future-icon,
+.panel-head span,
+.feed-item .meta,
+.auth-error,
+.date-label,
+.lb-cap,
+.note-meta,
+.bucket-date {
+  color: var(--sage);
+}
+
+nav {
+  background: rgba(255,253,248,.78);
+  border-bottom: 1px solid var(--sage-line);
+  box-shadow: 0 12px 30px var(--shadow-soft);
+}
+
+body.night nav {
+  background: rgba(24,33,25,.76);
+}
+
+.hero {
+  background:
+    radial-gradient(circle at 80% 15%, var(--clay-soft), transparent 25%),
+    radial-gradient(circle at 25% 78%, var(--sage-soft), transparent 32%),
+    var(--paper);
+  min-height: 100vh;
+}
+
+.hero:before,
+.hero:after {
+  border-color: var(--sage-line);
+}
+
+h1 span,
+.section-head h2 em,
+.final h2 span {
+  color: var(--clay);
+}
+
+.btn,
+.icon-btn,
+.navtoggle,
+.letter-tab,
+.bucket-item,
+.quiz-option,
+.private-panel,
+.space-card,
+.note-box,
+.time-box,
+.future-card,
+.gallery-item,
+.photo,
+.memory-card {
+  border-radius: 18px;
+  border-color: var(--sage-line);
+}
+
+.btn {
+  background: transparent;
+  color: var(--sage-dark);
+  border: 1px solid var(--sage-line);
+  box-shadow: 0 10px 20px var(--shadow-soft);
+}
+
+.btn.primary {
+  background: var(--sage-dark);
+  border-color: var(--sage-dark);
+  color: var(--paper);
+}
+
+.story,
+.gallery,
+.quiz,
+.space,
+.letters,
+.bucket,
+.timeline,
+.love-note,
+.countdown,
+.future {
+  background: var(--paper-soft);
+}
+
+.gallery-grid,
+.qa-grid,
+.future-grid,
+.private-grid {
+  gap: 20px;
+}
+
+.gallery-item {
+  box-shadow: 0 12px 20px var(--shadow-soft);
+}
+
+.gallery-item .cap {
+  background: linear-gradient(180deg, transparent, var(--sage-dark));
+}
+
+.qa-back {
+  background: var(--sage-dark);
+  color: var(--paper);
+}
+
+.qa-front {
+  background: var(--paper);
+}
+
+.love-note {
+  background: var(--clay-soft);
+}
+
+.note-box {
+  background: var(--paper);
+  border: 1px solid var(--sage-line);
+}
+
+.countdown {
+  background: var(--butter);
+}
+
+.timer .time-box {
+  background: var(--paper);
+  border: 1px solid var(--sage-line);
+}
+
+.letter {
+  background: var(--paper);
+  border: 1px solid var(--sage-line);
+  box-shadow: 0 14px 34px var(--shadow-soft);
+}
+
+.bucket-item {
+  background: var(--paper);
+  border-color: var(--sage-line);
+}
+
+.bucket-check {
+  border-color: var(--sage);
+  color: var(--sage);
+}
+
+.bucket-item.done .bucket-check {
+  background: var(--sage);
+  color: var(--paper);
+}
+
+.quiz-card,
+.space-card,
+.private-panel,
+.future-card,
+.note-box {
+  box-shadow: 0 16px 36px var(--shadow-soft);
+}
+
+.private-panel {
+  background: var(--paper);
+}
+
+.feed-item,
+.live-bucket,
+.memory-card {
+  border-color: var(--sage-line);
+  background: var(--paper);
+}
+
+.footer,
+.final {
+  background: var(--sage-dark);
+}
+
+.final {
+  background: var(--sage-dark);
+  color: var(--paper);
+}
+
+.final p {
+  color: var(--sage-muted);
+}
+
+body.night .hero,
+body.night .story,
+body.night .gallery,
+body.night .letters,
+body.night .space,
+body.night .quiz,
+body.night .timeline,
+body.night .bucket,
+body.night .love-note,
+body.night .countdown,
+body.night .future,
+body.night .qa,
+body.night .bucket {
+  background: var(--paper-soft);
+}
+
+body.night .final {
+  background: var(--sage-dark);
+}
+
+body.night .btn,
+body.night .quiz-option,
+body.night .memory-card,
+body.night .feed-item,
+body.night .live-bucket,
+body.night .note-box,
+body.night .private-panel {
+  background: var(--paper);
+  color: var(--sage-dark);
+}
+
+/* Smooth luxury polish */
+.navlinks a,
+.logo {
+  letter-spacing: .16em;
+}
+
+section {
+  border-top: 1px solid var(--sage-line);
+}
+
+section:nth-of-type(even) {
+  background-image: linear-gradient(135deg, transparent, var(--sage-soft));
+}
+
+.hero-content {
+  max-width: 940px;
+}
+
+.hero-copy {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+}
+
+.gallery-item,
+.photo,
+.future-card,
+.private-panel,
+.note-box,
+.bucket-item,
+.quiz-card,
+.space-card {
+  transition: transform .35s ease, box-shadow .35s ease, border-color .35s ease;
+}
+
+.gallery-item:hover,
+.future-card:hover,
+.bucket-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 40px var(--shadow-soft);
+}
+
+.btn:hover,
+.icon-btn:hover {
+  border-color: var(--clay);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 800px) {
+  nav {
+    backdrop-filter: blur(10px);
+  }
+
+  .navlinks {
+    background: var(--paper);
+  }
+}

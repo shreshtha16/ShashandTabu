@@ -25,3 +25,50 @@ body.night .story,body.night .gallery,body.night .letters,body.night .space,body
 @media(max-width:1000px){.navlinks{gap:12px}.navlinks a{font-size:9px}}
 @media(max-width:800px){.navlinks{display:none;position:absolute;top:68px;left:0;right:0;background:var(--paper);padding:18px 6vw;flex-direction:column;align-items:flex-start;border-bottom:1px solid var(--line)}.navlinks.open{display:flex}.navtoggle{display:flex}.nav-actions{margin-left:auto}.story-grid{grid-template-columns:1fr;gap:42px}.photo{min-height:440px}.gallery-grid,.qa-grid,.future-grid,.memory-grid{grid-template-columns:repeat(2,1fr)}.bucket-grid,.private-grid{grid-template-columns:1fr}.private-panel.wide{grid-column:auto}.space-top{align-items:flex-start;gap:15px}.inline-form{flex-direction:column}}
 @media(max-width:560px){section{padding:85px 6vw}.gallery-grid,.qa-grid,.future-grid,.memory-grid{grid-template-columns:1fr}.timer{gap:6px}.time-box{min-width:0;flex:1;padding:17px 6px}.time-box strong{font-size:34px}.time-box span{font-size:7px}.letter p{font-size:22px}.note-text{font-size:26px}.space-card,.private-panel{padding:22px}}.streak-badge{margin-top:6px;font-size:14px;opacity:.85}
+/* Elevated Rose & Paper Polish */
+body{background:
+ radial-gradient(circle at 78% 8%, rgba(184,107,118,.08), transparent 16%),
+ radial-gradient(circle at 18% 85%, rgba(232,200,193,.15), transparent 22%),
+ var(--cream);}
+nav{background:rgba(252,248,244,.84);box-shadow:0 20px 50px rgba(60,42,45,.08)}
+section{position:relative}
+section:before{content:"";position:absolute;left:7vw;right:7vw;top:0;height:1px;background:var(--line);opacity:.8}
+.hero{background:radial-gradient(circle at 82% 14%,var(--rose-soft),transparent 24%),radial-gradient(circle at 14% 86%,rgba(255,245,235,.8),transparent 30%),var(--cream)}
+.hero:before,.hero:after{border-color:var(--rose-soft)}
+.gallery-item{box-shadow:0 18px 50px rgba(76,45,49,.13);border:1px solid var(--line)}
+.gallery-item .cap{background:linear-gradient(180deg,transparent,rgba(52,42,44,.86))}
+.qa-back{background:var(--rose);color:var(--paper)}
+.timer .time-box{background:var(--paper);box-shadow:0 12px 30px rgba(60,42,45,.08)}
+.future-card,.private-panel,.space-card,.quiz-card,.note-box{box-shadow:0 20px 60px rgba(60,42,45,.08);border:1px solid var(--line)}
+.footer,.final{background:var(--dark)}
+@media(max-width:800px){nav{background:rgba(252,248,244,.95)}}
+
+/* More beautiful rose-paper refresh */
+body{background:
+ radial-gradient(circle at 72% 6%,rgba(184,107,118,.08),transparent 12%),
+ radial-gradient(circle at 18% 86%,rgba(232,200,193,.22),transparent 16%),
+ linear-gradient(180deg,var(--cream),#fffaf6)}
+body:before{content:"";position:fixed;inset:-80px;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%238a6670' fill-opacity='.035'%3E%3Ccircle cx='14' cy='16' r='2'/%3E%3Ccircle cx='82' cy='70' r='1.5'/%3E%3Ccircle cx='102' cy='18' r='2'/%3E%3Ccircle cx='50' cy='110' r='1'/%3E%3C/g%3E%3C/svg%3E");opacity:.9;z-index:-1}
+nav{background:rgba(252,248,244,.86);box-shadow:0 16px 45px rgba(60,42,45,.08)}
+.navlinks a{font-weight:500;letter-spacing:.22em}.navlinks a:hover{color:var(--rose)}
+.logo{font-family:"Cormorant Garamond",serif;letter-spacing:.02em}.logo:hover{color:var(--rose)}
+.hero{background:radial-gradient(circle at 78% 12%,var(--rose-soft),transparent 26%),radial-gradient(circle at 20% 82%,rgba(255,244,235,.95),transparent 30%),var(--cream);box-shadow:inset 0 -30px 80px rgba(184,107,118,.06)}
+.hero-copy{font:italic 28px/1.5 "Cormorant Garamond";color:var(--muted)}
+h1 span{color:var(--rose);text-shadow:0 2px 8px rgba(184,107,118,.2)}
+.hero-actions .btn.primary{background:var(--rose);border-color:var(--rose);color:var(--paper);box-shadow:0 12px 30px rgba(184,107,118,.2)}
+.btn{transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}.btn:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(60,42,45,.12)}
+.gallery-grid{gap:22px}.gallery-item{box-shadow:0 16px 45px rgba(60,42,45,.13);border:1px solid var(--line)}
+.gallery-item .cap{background:linear-gradient(180deg,transparent,rgba(52,42,44,.82));font-family:"Cormorant Garamond",serif}
+.timeline-list{max-width:860px}.moment .dot{background:var(--paper);box-shadow:0 0 0 4px var(--rose-soft)}
+.q-label,.moment .label,.letter-date,.panel-head span{color:var(--rose)}
+.love-note{background:linear-gradient(135deg,var(--rose-soft),#f7ede8)}
+.note-box{background:var(--paper);box-shadow:0 30px 82px rgba(60,42,45,.12);border:1px solid var(--line)}
+.countdown{background:linear-gradient(135deg,var(--rose-soft),var(--cream))}
+.timer .time-box{border-radius:16px;box-shadow:0 14px 30px rgba(60,42,45,.08)}
+.bucket-item{box-shadow:0 9px 20px rgba(60,42,45,.07)}
+.bucket-item:hover{transform:translateY(-3px);box-shadow:0 15px 30px rgba(60,42,45,.1)}
+.quiz-card,.space-card,.future-card,.private-panel{box-shadow:0 16px 40px rgba(60,42,45,.08);border:1px solid var(--line)}
+.private-panel{background:var(--paper)}
+.feed-item,.live-bucket,.memory-card{border-color:var(--line);box-shadow:0 8px 16px rgba(60,42,45,.04)}
+.lightbox{background:rgba(40,30,30,.92)}
+@media(max-width:800px){.navlinks a{font-size:9px}.hero-copy{font-size:24px}.gallery-grid{grid-template-columns:1fr}.story-grid{gap:36px}}
