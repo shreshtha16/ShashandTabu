@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, doc, updateDoc, deleteField, query, orderBy, limit, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBsoKZknVQVgJ4uifwyB4cmlMJ9UC6yDGU",
@@ -77,7 +77,58 @@ onAuthStateChanged(auth, user => {
       const time = document.createElement("time");
       time.className = "message-time";
       time.textContent = data.createdAt?.toDate?.().toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) || "Sending…";
-      message.append(author, text, time);
+      const footer = document.createElement("div");
+      footer.className = "message-footer";
+      const trigger = document.createElement("button");
+      trigger.className = "reaction-trigger";
+      trigger.type = "button";
+      trigger.textContent = "☺";
+      trigger.setAttribute("aria-label", "Add reaction");
+      const picker = document.createElement("div");
+      picker.className = "reaction-picker hidden";
+      ["❤️", "😂", "👍", "🥰", "😮"].forEach(emoji => {
+        const option = document.createElement("button");
+        option.type = "button";
+        option.textContent = emoji;
+        option.setAttribute("aria-label", `React ${emoji}`);
+        option.addEventListener("click", async () => {
+          const current = data.reactions?.[user.uid];
+          const selected = typeof current === "string" ? current : current ? "❤️" : null;
+          option.disabled = true;
+          try {
+            await updateDoc(doc(db, "notes", documentSnapshot.id), {
+              [`reactions.${user.uid}`]: selected === emoji ? deleteField() : emoji
+            });
+          } catch (error) {
+            connectionStatus.textContent = error.message;
+          } finally {
+            option.disabled = false;
+            picker.classList.add("hidden");
+          }
+        });
+        picker.append(option);
+      });
+      trigger.addEventListener("click", () => picker.classList.toggle("hidden"));
+      footer.append(time, trigger);
+      message.append(author, text, footer, picker);
+
+      const reactionCounts = new Map();
+      Object.entries(data.reactions || {}).forEach(([uid, value]) => {
+        const emoji = typeof value === "string" ? value : "❤️";
+        reactionCounts.set(emoji, (reactionCounts.get(emoji) || 0) + 1);
+        if (uid === user.uid) message.dataset.myReaction = emoji;
+      });
+      if (reactionCounts.size) {
+        const reactionRow = document.createElement("div");
+        reactionRow.className = "reaction-row";
+        reactionCounts.forEach((count, emoji) => {
+          const chip = document.createElement("span");
+          chip.className = `reaction-chip${message.dataset.myReaction === emoji ? " mine" : ""}`;
+          chip.textContent = `${emoji} ${count}`;
+          reactionRow.append(chip);
+        });
+        message.append(reactionRow);
+      }
       messages.append(message);
     });
     connectionStatus.textContent = "Live and connected";
