@@ -13,6 +13,10 @@ This is the static GitHub Pages front-end plus Firebase Authentication, Cloud Fi
 - Real-time Firestore listeners, so changes appear without refreshing
 - Note reactions, milestone letter tabs, On This Day memories and browser push notifications
 
+## Standalone live chat
+
+Open `chat.html` (the `/chat.html` route on the published site) for a focused chat-only page. It uses the same two approved Firebase accounts and the existing live notes, so messages remain visible in Our Space on the main site too.
+
 ## Firebase setup
 
 1. In Firebase Console, open project `shreshthakimuskan`.
@@ -46,6 +50,9 @@ Upload:
 - `index.html`
 - `style.css`
 - `app.js`
+- `chat.html`
+- `chat.css`
+- `chat.js`
 - `firebase-messaging-sw.js`
 - `DSC_6602.jpeg` (if you want the existing hero/gallery photo)
 - optionally `firebase.json`, `firestore.rules`, `storage.rules`

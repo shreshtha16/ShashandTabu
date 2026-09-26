@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#342a2c">
+<meta name="description" content="A private live chat for Shreshtha and Muskan.">
+<title>Our Chat — Shreshtha × Muskan</title>
+<link rel="stylesheet" href="chat.css">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+</head>
+<body>
+<main class="chat-shell">
+  <header class="chat-header">
+    <a class="back-link" href="./" aria-label="Back to our website">←</a>
+    <div class="identity">
+      <div class="avatar" aria-hidden="true"><span class="avatar-letters">S × M</span></div>
+      <div><h1>Our little chat</h1><div class="connection"><span id="connectionDot"></span><span id="connectionStatus">Connecting</span></div></div>
+    </div>
+    <button class="signout hidden" id="signOutButton" type="button">Sign out</button>
+  </header>
+
+  <section class="login-view" id="loginView" aria-labelledby="loginTitle">
+    <div class="login-mark" aria-hidden="true">♡</div>
+    <p class="eyebrow">Just the two of you</p>
+    <h2 id="loginTitle">A quieter place to say hello.</h2>
+    <p class="login-copy">Sign in with your usual account to open the chat.</p>
+    <form id="loginForm" class="login-form">
+      <label for="email">Email address</label>
+      <input id="email" type="email" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <button class="send-button login-button" type="submit">Open our chat <span aria-hidden="true">→</span></button>
+      <p class="form-error" id="loginError" role="alert"></p>
+    </form>
+  </section>
+
+  <section class="chat-view hidden" id="chatView" aria-label="Live chat">
+    <div class="messages" id="messages" aria-live="polite" aria-relevant="additions text">
+      <div class="empty-state" id="emptyState"><span>♡</span><p>This is your space.<br>Send the first hello.</p></div>
+    </div>
+    <form class="composer" id="messageForm">
+      <label class="visually-hidden" for="messageInput">Write a message</label>
+      <textarea id="messageInput" rows="1" maxlength="280" placeholder="Write a message…" required></textarea>
+      <button class="send-button" id="sendButton" type="submit" aria-label="Send message"><span>Send</span><span aria-hidden="true">↑</span></button>
+      <div class="composer-hint">Enter to send · Shift + Enter for a new line</div>
+    </form>
+  </section>
+
+  <footer class="chat-footer">A little corner of the internet, just for us <span>♡</span></footer>
+</main>
+<script type="module" src="chat.js"></script>
+</body>
+</html>

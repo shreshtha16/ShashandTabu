@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@400;500;600&display=swap');
+
+:root{font-family:"DM Sans",sans-serif;color:#342a2c;background:#f5eeea;font-synthesis:none;text-rendering:optimizeLegibility;--ink:#342a2c;--muted:#857678;--rose:#b86b76;--line:rgba(52,42,44,.12);--paper:#fffdfb;--blush:#f4e4e1}
+*{box-sizing:border-box}
+body{min-height:100vh;min-height:100svh;margin:0;background:radial-gradient(ellipse at 18% 16%,rgba(255,255,255,.9),transparent 34%),radial-gradient(ellipse at 90% 86%,rgba(233,200,199,.35),transparent 32%),#f5eeea}
+button,input,textarea{font:inherit}
+button{color:inherit}
+.chat-shell{width:min(100%,880px);height:100vh;height:100svh;min-height:480px;margin:auto;padding:0 34px;display:grid;grid-template-rows:86px minmax(0,1fr) 48px}
+.chat-header{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.identity{display:flex;align-items:center;gap:13px;margin-right:auto;margin-left:18px}
+.avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#e9c8c7;color:#53393d;font:600 17px "Cormorant Garamond",serif;position:relative}
+.avatar-letters{white-space:nowrap;font:600 15px "Cormorant Garamond",serif}
+.identity h1{margin:0;font:500 25px/1 "Cormorant Garamond",serif}
+.connection{display:flex;align-items:center;gap:6px;margin-top:6px;color:var(--muted);font-size:10px}
+.connection #connectionDot{width:6px;height:6px;border-radius:50%;background:#c6babb}
+.connection.connected #connectionDot{background:#6a987d;box-shadow:0 0 0 3px rgba(106,152,125,.12)}
+.back-link,.signout{width:36px;height:36px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;background:rgba(255,253,251,.6);text-decoration:none;color:var(--muted);font-size:19px;transition:background .18s,color .18s}
+.back-link:hover,.signout:hover{background:var(--paper);color:var(--rose)}
+.signout{width:auto;border-radius:18px;padding:0 13px;font-size:10px;cursor:pointer}
+.chat-view{min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto}
+.messages{overflow-y:auto;padding:30px 5px 22px;scrollbar-color:#dbc9c8 transparent;scrollbar-width:thin;display:flex;flex-direction:column;gap:12px}
+.empty-state{margin:auto;text-align:center;color:var(--muted);font:italic 23px/1.35 "Cormorant Garamond",serif}
+.empty-state span{display:block;margin-bottom:12px;color:var(--rose);font-size:28px}
+.message{max-width:min(76%,540px);padding:11px 15px 8px;border:1px solid var(--line);border-radius:15px 15px 15px 4px;background:var(--paper);box-shadow:0 3px 12px rgba(60,42,45,.035);animation:arrive .22s ease both}
+.message.mine{align-self:flex-end;border-color:rgba(184,107,118,.18);border-radius:15px 15px 4px 15px;background:#f2dfdc}
+.message-author{margin-bottom:4px;color:var(--rose);font-size:9px;font-weight:600}
+.message.mine .message-author{color:#88535b}
+.message-text{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.55}
+.message-time{display:block;margin-top:5px;color:var(--muted);font-size:9px;text-align:right}
+.composer{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 82px;gap:9px;align-items:end;padding:13px 0 25px;border-top:1px solid var(--line)}
+.composer textarea,.login-form input{width:100%;border:1px solid var(--line);border-radius:15px;background:rgba(255,253,251,.86);color:var(--ink);outline:none}
+.composer textarea{min-height:46px;max-height:130px;resize:none;padding:13px 15px;font-size:12px;line-height:1.5}
+.composer textarea:focus,.login-form input:focus{border-color:rgba(184,107,118,.65);box-shadow:0 0 0 3px rgba(184,107,118,.09)}
+.send-button{height:46px;border:0;border-radius:14px;background:#a85f6b;color:white;display:flex;align-items:center;justify-content:center;gap:9px;cursor:pointer;font-size:11px;transition:background .18s,transform .18s}
+.send-button:hover{background:#8e4c58;transform:translateY(-1px)}
+.send-button:disabled{opacity:.55;cursor:wait;transform:none}
+.send-button span:last-child{font-size:17px}
+.composer-hint{position:absolute;bottom:7px;left:3px;color:var(--muted);font-size:9px}
+.chat-footer{display:flex;align-items:center;justify-content:center;gap:5px;color:var(--muted);font-size:9px}
+.chat-footer span{color:var(--rose)}
+.login-view{width:min(100%,390px);align-self:center;justify-self:center;padding:22px 0 38px;animation:arrive .35s ease both}
+.login-mark{width:46px;height:46px;margin-bottom:22px;border:1px solid rgba(184,107,118,.25);border-radius:50%;display:grid;place-items:center;background:rgba(255,253,251,.6);color:var(--rose);font-size:20px}
+.eyebrow{color:var(--rose);font-size:9px;letter-spacing:.16em;text-transform:uppercase}
+.login-view h2{max-width:350px;margin:10px 0;font:500 42px/.98 "Cormorant Garamond",serif}
+.login-copy{margin:12px 0 25px;color:var(--muted);font-size:12px;line-height:1.6}
+.login-form{display:grid;gap:8px}
+.login-form label{margin-top:6px;color:var(--muted);font-size:10px}
+.login-form input{height:43px;padding:0 12px;font-size:12px}
+.login-button{width:100%;margin-top:9px}
+.login-button span{font-size:17px}
+.form-error{min-height:16px;margin:4px 0 0;color:#a3404e;font-size:10px}
+.hidden{display:none!important}
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@keyframes arrive{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:600px){.chat-shell{padding:0 17px;grid-template-rows:74px minmax(0,1fr) 39px}.identity{gap:10px;margin-left:12px}.avatar{width:38px;height:38px}.identity h1{font-size:23px}.messages{padding:22px 1px 17px}.message{max-width:88%}.composer{grid-template-columns:minmax(0,1fr) 68px;padding-top:10px}.send-button{border-radius:13px}.composer-hint{font-size:8px}.login-view{padding:12px 3px 30px}.login-view h2{font-size:39px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
