@@ -28,7 +28,7 @@ button{color:inherit}
 .message-text{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.55}
 .message-footer{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:5px}
 .message-time{color:var(--muted);font-size:9px}
-.reaction-trigger{width:24px;height:22px;padding:0;border:0;background:transparent;color:var(--muted);font-size:16px;line-height:1;cursor:pointer}
+.reaction-trigger{width:24px;height:22px;padding:0;border:0;background:transparent;color:var(--muted);font-size:18px;font-weight:500;line-height:1;cursor:pointer}
 .reaction-trigger:hover{color:var(--rose)}
 emoji-picker.reaction-picker{position:absolute;z-index:5;right:0;bottom:calc(100% + 8px);display:block;width:min(352px,calc(100vw - 48px));height:320px;--num-columns:8;--emoji-size:1.45rem;--emoji-padding:.32rem;--background:var(--paper);--border-color:var(--line);--border-radius:12px;--border-size:1px;box-shadow:0 8px 24px rgba(60,42,45,.16)}
 .reaction-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}

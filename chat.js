@@ -83,7 +83,7 @@ onAuthStateChanged(auth, user => {
       const trigger = document.createElement("button");
       trigger.className = "reaction-trigger";
       trigger.type = "button";
-      trigger.textContent = "☺";
+      trigger.textContent = "+";
       trigger.setAttribute("aria-label", "Add reaction");
       const picker = document.createElement("emoji-picker");
       picker.className = "reaction-picker hidden";
