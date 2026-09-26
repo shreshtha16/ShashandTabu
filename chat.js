@@ -31,6 +31,14 @@ let stopMessages;
 let firstSnapshot = true;
 let emojiPickerModule;
 
+document.addEventListener("pointerdown", event => {
+  const insideReactionControl = event.composedPath().some(target =>
+    target instanceof Element && target.matches(".reaction-picker, .reaction-trigger")
+  );
+  if (insideReactionControl) return;
+  messages.querySelectorAll(".reaction-picker:not(.hidden)").forEach(picker => picker.classList.add("hidden"));
+});
+
 loginForm.addEventListener("submit", async event => {
   event.preventDefault();
   loginError.textContent = "";
