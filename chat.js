@@ -29,6 +29,7 @@ const connection = document.querySelector(".connection");
 const signOutButton = document.getElementById("signOutButton");
 let stopMessages;
 let firstSnapshot = true;
+let emojiPickerModule;
 
 loginForm.addEventListener("submit", async event => {
   event.preventDefault();
@@ -84,31 +85,39 @@ onAuthStateChanged(auth, user => {
       trigger.type = "button";
       trigger.textContent = "☺";
       trigger.setAttribute("aria-label", "Add reaction");
-      const picker = document.createElement("div");
+      const picker = document.createElement("emoji-picker");
       picker.className = "reaction-picker hidden";
-      ["❤️", "😂", "👍", "🥰", "😮"].forEach(emoji => {
-        const option = document.createElement("button");
-        option.type = "button";
-        option.textContent = emoji;
-        option.setAttribute("aria-label", `React ${emoji}`);
-        option.addEventListener("click", async () => {
-          const current = data.reactions?.[user.uid];
-          const selected = typeof current === "string" ? current : current ? "❤️" : null;
-          option.disabled = true;
-          try {
-            await updateDoc(doc(db, "notes", documentSnapshot.id), {
-              [`reactions.${user.uid}`]: selected === emoji ? deleteField() : emoji
-            });
-          } catch (error) {
-            connectionStatus.textContent = error.message;
-          } finally {
-            option.disabled = false;
-            picker.classList.add("hidden");
-          }
-        });
-        picker.append(option);
+      picker.addEventListener("emoji-click", async event => {
+        const emoji = event.detail.unicode;
+        const current = data.reactions?.[user.uid];
+        const selected = typeof current === "string" ? current : current ? "❤️" : null;
+        try {
+          await updateDoc(doc(db, "notes", documentSnapshot.id), {
+            [`reactions.${user.uid}`]: selected === emoji ? deleteField() : emoji
+          });
+        } catch (error) {
+          connectionStatus.textContent = error.message;
+        } finally {
+          picker.classList.add("hidden");
+        }
       });
-      trigger.addEventListener("click", () => picker.classList.toggle("hidden"));
+      trigger.addEventListener("click", async () => {
+        const opening = picker.classList.contains("hidden");
+        if (opening) {
+          try {
+            emojiPickerModule ||= import("https://cdn.jsdelivr.net/npm/emoji-picker-element@1.29.1/index.js");
+            await emojiPickerModule;
+            await customElements.whenDefined("emoji-picker");
+            messages.querySelectorAll(".reaction-picker").forEach(otherPicker => otherPicker.classList.add("hidden"));
+            picker.classList.remove("hidden");
+          } catch (error) {
+            emojiPickerModule = null;
+            connectionStatus.textContent = "Could not load emoji picker";
+          }
+        } else {
+          picker.classList.add("hidden");
+        }
+      });
       footer.append(time, trigger);
       message.append(author, text, footer, picker);
 
