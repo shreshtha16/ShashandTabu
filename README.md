@@ -12,12 +12,15 @@ This is the static GitHub Pages front-end plus Firebase Authentication, Cloud Fi
 - Private letters in Firestore
 - Real-time Firestore listeners, so changes appear without refreshing
 - Note reactions, milestone letter tabs, On This Day memories and browser push notifications
+- Chat can be installed as its own home-screen app and offers push notification opt-in
 
 ## Standalone live chat
 
 Open `chat.html` (the `/chat.html` route on the published site) for a focused chat-only page. It uses the same two approved Firebase accounts and the existing live notes, so messages remain visible in Our Space on the main site too.
 
 The chat shows current online status and last-seen times using per-tab Firestore heartbeats. To enable presence, deploy the updated Firestore rules with `firebase deploy --only firestore:rules`. An account is shown offline after its heartbeat is stale for 60 seconds; this is live presence, not a historical activity log.
+
+On a phone, open `/chat.html` and use **Install**; on iPhone/iPad, open the link in Safari, tap Share, then **Add to Home Screen**. The installed shortcut opens directly to chat. Sign in and tap **Enable notifications** to register that device. iOS web push requires iOS/iPadOS 16.4 or later and the site added to the Home Screen.
 
 ## Firebase setup
 
@@ -39,7 +42,7 @@ The chat shows current online status and last-seen times using per-tab Firestore
 Push notifications require a Firebase Console setup in addition to the static site:
 
 1. Cloud Messaging → Web configuration → create a Web Push certificate key.
-2. Copy the VAPID key into `FCM_VAPID_KEY` in `app.js`.
+2. Copy the same VAPID key into `FCM_VAPID_KEY` in both `app.js` and `chat.js`.
 3. Serve `firebase-messaging-sw.js` from the site root. GitHub Pages must deploy it alongside `index.html`.
 4. Install the dependencies in `functions/` with `npm install` and deploy the notification trigger with `firebase deploy --only functions:notifyPartnerOnNote`.
 5. Deploy the updated Firestore rules. The rules include the private `notificationTokens/{userId}` documents used by the client.

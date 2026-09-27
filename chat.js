@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, doc, setDoc, updateDoc, deleteField, query, orderBy, limit, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-messaging.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBsoKZknVQVgJ4uifwyB4cmlMJ9UC6yDGU",
@@ -14,9 +15,11 @@ const firebaseConfig = {
 const CHAT_ACCOUNTS = ["muskanpandey8076@gmail.com", "shreshthatiwari24@gmail.com"];
 const PRESENCE_HEARTBEAT_MS = 20000;
 const PRESENCE_STALE_MS = 60000;
+const FCM_VAPID_KEY = "BM73UlZ90uLZFfy2JjmAr9hHM1dcaGpenETKOEDtjZx-s8HBdwUf5QP9GVBILlsZX_hu7iebSMUeI-gNfr56WAA";
 
-const auth = getAuth(initializeApp(firebaseConfig));
-const db = getFirestore(auth.app);
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("./firebase-messaging-sw.js").catch(() => {});
 const loginView = document.getElementById("loginView");
 const chatView = document.getElementById("chatView");
@@ -31,6 +34,16 @@ const connectionStatus = document.getElementById("connectionStatus");
 const connection = document.querySelector(".connection");
 const presenceStatus = document.getElementById("presenceStatus");
 const signOutButton = document.getElementById("signOutButton");
+const notificationButton = document.getElementById("notificationButton");
+const installButton = document.getElementById("installButton");
+const installDialog = document.getElementById("installDialog");
+const installInstructions = document.getElementById("installInstructions");
+let deferredInstallPrompt;
+
+if (isStandalone()) {
+  installButton.textContent = "Installed";
+  installButton.disabled = true;
+}
 let stopMessages;
 let stopPresenceListeners = [];
 let presenceHeartbeat;
@@ -130,6 +143,80 @@ window.addEventListener("pageshow", () => {
   if (currentUser && presenceSessionRef) writePresence(true);
 });
 
+function isStandalone() {
+  return window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+}
+
+window.addEventListener("beforeinstallprompt", event => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  installButton.textContent = "Install app";
+  installButton.classList.remove("hidden");
+});
+
+window.addEventListener("appinstalled", () => {
+  deferredInstallPrompt = null;
+  installButton.classList.add("hidden");
+});
+
+installButton.addEventListener("click", async () => {
+  if (isStandalone()) {
+    installInstructions.textContent = "Our chat is already on your Home Screen.";
+    installDialog.showModal();
+    return;
+  }
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    return;
+  }
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  installInstructions.textContent = isIOS
+    ? "In Safari, tap Share, then choose Add to Home Screen and tap Add."
+    : "Open your browser menu and choose Install app or Add to Home Screen. Our chat will open directly from its icon.";
+  installDialog.showModal();
+});
+
+document.getElementById("installDone").addEventListener("click", () => installDialog.close());
+
+async function enableNotifications(user) {
+  notificationButton.disabled = true;
+  try {
+    if (!("Notification" in window) || !(await isSupported())) {
+      notificationButton.textContent = "Notifications unavailable";
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") {
+      notificationButton.textContent = permission === "denied" ? "Notifications blocked" : "Enable notifications";
+      return;
+    }
+    const messaging = getMessaging(firebaseApp);
+    const registration = await navigator.serviceWorker.ready;
+    const token = await getToken(messaging, { vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: registration });
+    await setDoc(doc(db, "notificationTokens", user.uid), {
+      uid: user.uid,
+      token,
+      updatedAt: serverTimestamp()
+    });
+    notificationButton.textContent = "Notifications enabled";
+    onMessage(messaging, payload => {
+      const title = payload.notification?.title || "A note from us";
+      new Notification(title, { body: payload.notification?.body || "You have a new note." });
+    });
+  } catch (error) {
+    notificationButton.textContent = "Try notifications again";
+    connectionStatus.textContent = error.message;
+  } finally {
+    notificationButton.disabled = false;
+  }
+}
+
+notificationButton.addEventListener("click", () => {
+  if (auth.currentUser) enableNotifications(auth.currentUser);
+});
+
 document.addEventListener("pointerdown", event => {
   const insideReactionControl = event.composedPath().some(target =>
     target instanceof Element && target.matches(".reaction-picker, .reaction-trigger")
@@ -161,6 +248,7 @@ onAuthStateChanged(auth, user => {
     loginView.classList.remove("hidden");
     chatView.classList.add("hidden");
     signOutButton.classList.add("hidden");
+    notificationButton.classList.add("hidden");
     connectionStatus.textContent = "Sign in to connect";
     connection.classList.remove("connected");
     presenceStatus.classList.remove("is-online");
@@ -171,6 +259,9 @@ onAuthStateChanged(auth, user => {
   loginView.classList.add("hidden");
   chatView.classList.remove("hidden");
   signOutButton.classList.remove("hidden");
+  notificationButton.classList.remove("hidden");
+  notificationButton.disabled = !("Notification" in window) || Notification.permission === "denied";
+  notificationButton.textContent = notificationButton.disabled ? "Notifications blocked" : "Enable notifications";
   connectionStatus.textContent = "Connecting";
   presenceStatus.textContent = "Checking who is here…";
   presenceStatus.classList.remove("is-online");

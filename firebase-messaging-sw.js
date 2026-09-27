@@ -1,8 +1,8 @@
 importScripts("https://www.gstatic.com/firebasejs/12.17.1/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/12.17.1/firebase-messaging-compat.js");
 
-const CACHE_NAME="us-site-v8";
-const APP_SHELL=["./","./index.html","./style.css","./app.js","./chat.html","./chat.css","./chat.js","./manifest.webmanifest","./icon-192.png","./icon-512.png"];
+const CACHE_NAME="us-site-v9";
+const APP_SHELL=["./","./index.html","./style.css","./app.js","./chat.html","./chat.css","./chat.js","./manifest.webmanifest","./chat.webmanifest","./icon-192.png","./icon-512.png"];
 self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener("fetch",event=>{
@@ -31,5 +31,14 @@ firebase.initializeApp({
 const messaging=firebase.messaging();
 messaging.onBackgroundMessage(payload=>{
   const title=payload.notification?.title||"A note from us";
-  self.registration.showNotification(title,{body:payload.notification?.body||"You have a new note."});
+  self.registration.showNotification(title,{body:payload.notification?.body||"You have a new note.",data:{url:"./chat.html"}});
+});
+
+self.addEventListener("notificationclick",event=>{
+  event.notification.close();
+  const target=new URL(event.notification.data?.url||"./chat.html",self.registration.scope).href;
+  event.waitUntil(self.clients.matchAll({type:"window",includeUncontrolled:true}).then(clients=>{
+    const chatClient=clients.find(client=>client.url.startsWith(new URL("./chat.html",self.registration.scope).href));
+    return chatClient?chatClient.focus():self.clients.openWindow(target);
+  }));
 });
