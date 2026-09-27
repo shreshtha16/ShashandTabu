@@ -22,6 +22,8 @@ The chat shows current online status and last-seen times using per-tab Firestore
 
 On a phone, open `/chat.html` and use **Install**; on iPhone/iPad, open the link in Safari, tap Share, then **Add to Home Screen**. The installed shortcut opens directly to chat. Sign in and tap **Enable notifications** to register that device. iOS web push requires iOS/iPadOS 16.4 or later and the site added to the Home Screen.
 
+On each signed-in launch, chat checks the browser's saved notification permission, refreshes the Firebase messaging token, and restores the **Notifications enabled** state without asking again. If permission is revoked in browser/device settings, it must be enabled there again.
+
 ## Firebase setup
 
 1. In Firebase Console, open project `shreshthakimuskan`.

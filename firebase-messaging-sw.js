@@ -1,7 +1,7 @@
 importScripts("https://www.gstatic.com/firebasejs/12.17.1/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/12.17.1/firebase-messaging-compat.js");
 
-const CACHE_NAME="us-site-v9";
+const CACHE_NAME="us-site-v10";
 const APP_SHELL=["./","./index.html","./style.css","./app.js","./chat.html","./chat.css","./chat.js","./manifest.webmanifest","./chat.webmanifest","./icon-192.png","./icon-512.png"];
 self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));

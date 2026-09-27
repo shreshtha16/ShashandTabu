@@ -39,6 +39,8 @@ const installButton = document.getElementById("installButton");
 const installDialog = document.getElementById("installDialog");
 const installInstructions = document.getElementById("installInstructions");
 let deferredInstallPrompt;
+let messagingClient;
+let stopForegroundMessages;
 
 if (isStandalone()) {
   installButton.textContent = "Installed";
@@ -180,41 +182,47 @@ installButton.addEventListener("click", async () => {
 
 document.getElementById("installDone").addEventListener("click", () => installDialog.close());
 
-async function enableNotifications(user) {
+async function syncNotifications(user, requestPermission = false) {
   notificationButton.disabled = true;
   try {
     if (!("Notification" in window) || !(await isSupported())) {
       notificationButton.textContent = "Notifications unavailable";
       return;
     }
-    const permission = await Notification.requestPermission();
+    const permission = requestPermission && Notification.permission === "default"
+      ? await Notification.requestPermission()
+      : Notification.permission;
     if (permission !== "granted") {
       notificationButton.textContent = permission === "denied" ? "Notifications blocked" : "Enable notifications";
+      notificationButton.disabled = permission === "denied";
       return;
     }
-    const messaging = getMessaging(firebaseApp);
+    messagingClient ||= getMessaging(firebaseApp);
     const registration = await navigator.serviceWorker.ready;
-    const token = await getToken(messaging, { vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: registration });
+    const token = await getToken(messagingClient, { vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: registration });
     await setDoc(doc(db, "notificationTokens", user.uid), {
       uid: user.uid,
       token,
       updatedAt: serverTimestamp()
     });
     notificationButton.textContent = "Notifications enabled";
-    onMessage(messaging, payload => {
+    notificationButton.disabled = true;
+    stopForegroundMessages ||= onMessage(messagingClient, payload => {
+      if (Notification.permission !== "granted") return;
       const title = payload.notification?.title || "A note from us";
       new Notification(title, { body: payload.notification?.body || "You have a new note." });
     });
   } catch (error) {
     notificationButton.textContent = "Try notifications again";
     connectionStatus.textContent = error.message;
-  } finally {
     notificationButton.disabled = false;
+  } finally {
+    if (notificationButton.textContent === "Enable notifications") notificationButton.disabled = false;
   }
 }
 
 notificationButton.addEventListener("click", () => {
-  if (auth.currentUser) enableNotifications(auth.currentUser);
+  if (auth.currentUser) syncNotifications(auth.currentUser, true);
 });
 
 document.addEventListener("pointerdown", event => {
@@ -249,6 +257,8 @@ onAuthStateChanged(auth, user => {
     chatView.classList.add("hidden");
     signOutButton.classList.add("hidden");
     notificationButton.classList.add("hidden");
+    stopForegroundMessages?.();
+    stopForegroundMessages = null;
     connectionStatus.textContent = "Sign in to connect";
     connection.classList.remove("connected");
     presenceStatus.classList.remove("is-online");
@@ -260,8 +270,9 @@ onAuthStateChanged(auth, user => {
   chatView.classList.remove("hidden");
   signOutButton.classList.remove("hidden");
   notificationButton.classList.remove("hidden");
-  notificationButton.disabled = !("Notification" in window) || Notification.permission === "denied";
-  notificationButton.textContent = notificationButton.disabled ? "Notifications blocked" : "Enable notifications";
+  notificationButton.disabled = false;
+  notificationButton.textContent = "Checking notifications…";
+  syncNotifications(user);
   connectionStatus.textContent = "Connecting";
   presenceStatus.textContent = "Checking who is here…";
   presenceStatus.classList.remove("is-online");
