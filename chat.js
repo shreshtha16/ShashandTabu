@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, doc, updateDoc, deleteField, query, orderBy, limit, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, doc, setDoc, updateDoc, deleteField, query, orderBy, limit, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBsoKZknVQVgJ4uifwyB4cmlMJ9UC6yDGU",
@@ -11,6 +11,9 @@ const firebaseConfig = {
   appId: "1:94387962116:web:0ad40298106fd5d32f1051",
   measurementId: "G-T8BY84YBFN"
 };
+const CHAT_ACCOUNTS = ["muskanpandey8076@gmail.com", "shreshthatiwari24@gmail.com"];
+const PRESENCE_HEARTBEAT_MS = 20000;
+const PRESENCE_STALE_MS = 60000;
 
 const auth = getAuth(initializeApp(firebaseConfig));
 const db = getFirestore(auth.app);
@@ -26,10 +29,106 @@ const messageInput = document.getElementById("messageInput");
 const sendButton = document.getElementById("sendButton");
 const connectionStatus = document.getElementById("connectionStatus");
 const connection = document.querySelector(".connection");
+const presenceStatus = document.getElementById("presenceStatus");
 const signOutButton = document.getElementById("signOutButton");
 let stopMessages;
+let stopPresenceListeners = [];
+let presenceHeartbeat;
+let presenceRefresh;
+let presenceSessionRef;
+let currentUser;
+const presenceByEmail = new Map();
 let firstSnapshot = true;
 let emojiPickerModule;
+
+function stopPresenceTracking() {
+  stopPresenceListeners.forEach(unsubscribe => unsubscribe());
+  stopPresenceListeners = [];
+  clearInterval(presenceHeartbeat);
+  clearInterval(presenceRefresh);
+  presenceHeartbeat = null;
+  presenceRefresh = null;
+  presenceSessionRef = null;
+  presenceByEmail.clear();
+}
+
+function formatLastSeen(timestamp) {
+  if (!timestamp?.toDate) return "not seen yet";
+  const date = timestamp.toDate();
+  const time = date.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });
+  return date.toDateString() === new Date().toDateString()
+    ? `last seen ${time}`
+    : `last seen ${date.toLocaleDateString("en-IN", { day: "numeric", month: "short" })}, ${time}`;
+}
+
+function accountPresence(email) {
+  const sessions = presenceByEmail.get(email) || [];
+  const latest = sessions.reduce((newest, session) => {
+    const current = session.lastSeen?.toMillis?.() || 0;
+    return current > (newest?.lastSeen?.toMillis?.() || 0) ? session : newest;
+  }, null);
+  const online = sessions.some(session => {
+    const lastSeen = session.lastSeen?.toMillis?.() || 0;
+    return session.online === true && Date.now() - lastSeen < PRESENCE_STALE_MS;
+  });
+  return { online, latest };
+}
+
+function renderPresence() {
+  if (!currentUser?.email) return;
+  const myEmail = currentUser.email.toLowerCase();
+  const partnerEmail = CHAT_ACCOUNTS.find(email => email !== myEmail);
+  const myPresence = accountPresence(myEmail);
+  const partnerPresence = accountPresence(partnerEmail);
+  const partnerName = partnerEmail === "muskanpandey8076@gmail.com" ? "Muskan" : "Shreshtha";
+  if (myPresence.online && partnerPresence.online) {
+    presenceStatus.textContent = `You and ${partnerName} are both online`;
+    presenceStatus.classList.add("is-online");
+    return;
+  }
+  presenceStatus.classList.remove("is-online");
+  const you = document.createElement("span");
+  you.className = myPresence.online ? "is-online" : "is-offline";
+  you.textContent = `You: ${myPresence.online ? "online" : formatLastSeen(myPresence.latest?.lastSeen)}`;
+  const partner = document.createElement("span");
+  partner.className = partnerPresence.online ? "is-online" : "is-offline";
+  partner.textContent = `${partnerName}: ${partnerPresence.online ? "online" : formatLastSeen(partnerPresence.latest?.lastSeen)}`;
+  presenceStatus.replaceChildren(you, document.createTextNode(" · "), partner);
+}
+
+async function writePresence(online) {
+  if (!presenceSessionRef) return;
+  try {
+    await setDoc(presenceSessionRef, { online, lastSeen: serverTimestamp() }, { merge: true });
+  } catch (error) {
+    presenceStatus.textContent = "Presence unavailable";
+  }
+}
+
+function startPresenceTracking(user) {
+  stopPresenceTracking();
+  currentUser = user;
+  const myEmail = user.email.toLowerCase();
+  const sessionId = crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  presenceSessionRef = doc(db, "presence", myEmail, "sessions", sessionId);
+  CHAT_ACCOUNTS.forEach(email => {
+    const unsubscribe = onSnapshot(collection(db, "presence", email, "sessions"), snapshot => {
+      presenceByEmail.set(email, snapshot.docs.map(session => session.data()));
+      renderPresence();
+    }, () => {
+      presenceStatus.textContent = "Presence unavailable";
+    });
+    stopPresenceListeners.push(unsubscribe);
+  });
+  writePresence(true);
+  presenceHeartbeat = setInterval(() => writePresence(true), PRESENCE_HEARTBEAT_MS);
+  presenceRefresh = setInterval(renderPresence, 10000);
+}
+
+window.addEventListener("pagehide", () => writePresence(false));
+window.addEventListener("pageshow", () => {
+  if (currentUser && presenceSessionRef) writePresence(true);
+});
 
 document.addEventListener("pointerdown", event => {
   const insideReactionControl = event.composedPath().some(target =>
@@ -49,16 +148,23 @@ loginForm.addEventListener("submit", async event => {
   }
 });
 
-signOutButton.addEventListener("click", () => signOut(auth));
+signOutButton.addEventListener("click", async () => {
+  await Promise.race([writePresence(false), new Promise(resolve => setTimeout(resolve, 1000))]);
+  await signOut(auth);
+});
 
 onAuthStateChanged(auth, user => {
   stopMessages?.();
+  stopPresenceTracking();
   if (!user) {
+    currentUser = null;
     loginView.classList.remove("hidden");
     chatView.classList.add("hidden");
     signOutButton.classList.add("hidden");
     connectionStatus.textContent = "Sign in to connect";
     connection.classList.remove("connected");
+    presenceStatus.classList.remove("is-online");
+    presenceStatus.textContent = "Sign in to see presence";
     return;
   }
 
@@ -66,6 +172,9 @@ onAuthStateChanged(auth, user => {
   chatView.classList.remove("hidden");
   signOutButton.classList.remove("hidden");
   connectionStatus.textContent = "Connecting";
+  presenceStatus.textContent = "Checking who is here…";
+  presenceStatus.classList.remove("is-online");
+  startPresenceTracking(user);
   firstSnapshot = true;
   const recentMessages = query(collection(db, "notes"), orderBy("createdAt", "desc"), limit(100));
   stopMessages = onSnapshot(recentMessages, snapshot => {

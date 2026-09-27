@@ -17,6 +17,8 @@ This is the static GitHub Pages front-end plus Firebase Authentication, Cloud Fi
 
 Open `chat.html` (the `/chat.html` route on the published site) for a focused chat-only page. It uses the same two approved Firebase accounts and the existing live notes, so messages remain visible in Our Space on the main site too.
 
+The chat shows current online status and last-seen times using per-tab Firestore heartbeats. To enable presence, deploy the updated Firestore rules with `firebase deploy --only firestore:rules`. An account is shown offline after its heartbeat is stale for 60 seconds; this is live presence, not a historical activity log.
+
 ## Firebase setup
 
 1. In Firebase Console, open project `shreshthakimuskan`.

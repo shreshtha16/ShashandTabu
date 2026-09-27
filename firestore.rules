@@ -35,6 +35,17 @@ service cloud.firestore {
       allow delete: if isUs();
     }
 
+    match /presence/{email}/sessions/{sessionId} {
+      allow read: if isUs();
+      allow create, update: if isUs()
+        && request.auth.token.email == email
+        && request.resource.data.keys().hasOnly(['online', 'lastSeen'])
+        && request.resource.data.keys().hasAll(['online', 'lastSeen'])
+        && request.resource.data.online is bool
+        && request.resource.data.lastSeen is timestamp;
+      allow delete: if isUs() && request.auth.token.email == email;
+    }
+
     match /bucketItems/{itemId} {
       allow read: if isUs();
       allow create: if isUs()
