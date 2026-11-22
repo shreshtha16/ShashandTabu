@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, doc, setDoc, updateDoc, deleteField, query, orderBy, limit, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, doc, setDoc, updateDoc, deleteField, query, orderBy, limit, onSnapshot, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-messaging.js";
 
 const firebaseConfig = {
@@ -38,6 +38,13 @@ const notificationButton = document.getElementById("notificationButton");
 const installButton = document.getElementById("installButton");
 const installDialog = document.getElementById("installDialog");
 const installInstructions = document.getElementById("installInstructions");
+const gameButton = document.getElementById("gameButton");
+const gameDialog = document.getElementById("gameDialog");
+const gameStatus = document.getElementById("gameStatus");
+const gameBoard = document.getElementById("gameBoard");
+const startGameButton = document.getElementById("startGameButton");
+const joinGameButton = document.getElementById("joinGameButton");
+const gameRef = doc(db, "games", "ticTacToe");
 let deferredInstallPrompt;
 let messagingClient;
 let stopForegroundMessages;
@@ -47,6 +54,7 @@ if (isStandalone()) {
   installButton.disabled = true;
 }
 let stopMessages;
+let stopGameListener;
 let stopPresenceListeners = [];
 let presenceHeartbeat;
 let presenceRefresh;
@@ -55,6 +63,135 @@ let currentUser;
 const presenceByEmail = new Map();
 let firstSnapshot = true;
 let emojiPickerModule;
+let currentGame;
+
+function getGameResult(board) {
+  const lines = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [0, 4, 8], [2, 4, 6]
+  ];
+  return lines.find(([first, second, third]) =>
+    board[first] && board[first] === board[second] && board[first] === board[third]
+  ) ? "won" : board.every(Boolean) ? "draw" : null;
+}
+
+function renderGame() {
+  const user = auth.currentUser;
+  const game = currentGame;
+  const isPlayer = game && (game.xUid === user?.uid || game.oUid === user?.uid);
+  const isTurn = game?.status === "playing" && game.turnUid === user?.uid;
+  gameBoard.replaceChildren();
+
+  if (!game) {
+    gameStatus.textContent = "Start a game and invite the other player.";
+  } else if (game.status === "waiting") {
+    gameStatus.textContent = game.xUid === user?.uid
+      ? "Waiting for the other player to join…"
+      : "Join as O to start playing.";
+  } else if (game.status === "won") {
+    gameStatus.textContent = game.winnerUid === user?.uid ? "You win! 🎉" : "They win this round.";
+  } else if (game.status === "draw") {
+    gameStatus.textContent = "It's a draw!";
+  } else {
+    const mark = game.xUid === user?.uid ? "X" : "O";
+    gameStatus.textContent = isTurn ? `Your turn (${mark})` : "Their turn";
+  }
+
+  if (game?.board?.length === 9) {
+    game.board.forEach((mark, index) => {
+      const cell = document.createElement("button");
+      cell.type = "button";
+      cell.className = `game-cell${mark ? ` mark-${mark.toLowerCase()}` : ""}`;
+      cell.textContent = mark;
+      cell.setAttribute("aria-label", `Row ${Math.floor(index / 3) + 1}, column ${index % 3 + 1}, ${mark || "empty"}`);
+      cell.disabled = !isPlayer || !isTurn || Boolean(mark);
+      cell.addEventListener("click", () => playGameMove(index));
+      gameBoard.append(cell);
+    });
+  }
+
+  const active = game?.status === "waiting" || game?.status === "playing";
+  startGameButton.textContent = game && ["won", "draw"].includes(game.status) ? "Play again" : "Start a game";
+  startGameButton.classList.toggle("hidden", Boolean(active));
+  joinGameButton.classList.toggle("hidden", game?.status !== "waiting" || game.xUid === user?.uid);
+}
+
+async function startGame() {
+  const user = auth.currentUser;
+  if (!user) return;
+  try {
+    await runTransaction(db, async transaction => {
+      const snapshot = await transaction.get(gameRef);
+      if (snapshot.exists() && ["waiting", "playing"].includes(snapshot.data().status)) {
+        throw new Error("A game is already in progress.");
+      }
+      transaction.set(gameRef, {
+        board: Array(9).fill(""),
+        xUid: user.uid,
+        oUid: null,
+        turnUid: user.uid,
+        winnerUid: null,
+        status: "waiting",
+        updatedAt: serverTimestamp()
+      });
+    });
+  } catch (error) {
+    gameStatus.textContent = error.message || "Could not start the game.";
+  }
+}
+
+async function joinGame() {
+  const user = auth.currentUser;
+  if (!user) return;
+  try {
+    await runTransaction(db, async transaction => {
+      const snapshot = await transaction.get(gameRef);
+      if (!snapshot.exists()) throw new Error("Start a new game first.");
+      const game = snapshot.data();
+      if (game.status !== "waiting" || game.xUid === user.uid || game.oUid) {
+        throw new Error("This game is no longer waiting for a player.");
+      }
+      transaction.update(gameRef, { oUid: user.uid, status: "playing", updatedAt: serverTimestamp() });
+    });
+  } catch (error) {
+    gameStatus.textContent = error.message || "Could not join the game.";
+  }
+}
+
+async function playGameMove(index) {
+  const user = auth.currentUser;
+  if (!user) return;
+  try {
+    await runTransaction(db, async transaction => {
+      const snapshot = await transaction.get(gameRef);
+      if (!snapshot.exists()) throw new Error("The game has ended.");
+      const game = snapshot.data();
+      if (game.status !== "playing" || game.turnUid !== user.uid || game.board[index]) {
+        throw new Error("That move is no longer available.");
+      }
+      const mark = game.xUid === user.uid ? "X" : game.oUid === user.uid ? "O" : null;
+      if (!mark) throw new Error("You are not playing in this game.");
+      const board = [...game.board];
+      board[index] = mark;
+      const result = getGameResult(board);
+      transaction.update(gameRef, {
+        board,
+        turnUid: result ? null : mark === "X" ? game.oUid : game.xUid,
+        winnerUid: result === "won" ? user.uid : null,
+        status: result || "playing",
+        updatedAt: serverTimestamp()
+      });
+    });
+  } catch (error) {
+    gameStatus.textContent = error.message || "Could not make that move.";
+  }
+}
+
+gameButton.addEventListener("click", () => gameDialog.showModal());
+document.getElementById("gameClose").addEventListener("click", () => gameDialog.close());
+startGameButton.addEventListener("click", startGame);
+joinGameButton.addEventListener("click", joinGame);
 
 function stopPresenceTracking() {
   stopPresenceListeners.forEach(unsubscribe => unsubscribe());
@@ -250,12 +387,16 @@ signOutButton.addEventListener("click", async () => {
 
 onAuthStateChanged(auth, user => {
   stopMessages?.();
+  stopGameListener?.();
+  currentGame = null;
+  renderGame();
   stopPresenceTracking();
   if (!user) {
     currentUser = null;
     loginView.classList.remove("hidden");
     chatView.classList.add("hidden");
     signOutButton.classList.add("hidden");
+    gameButton.classList.add("hidden");
     notificationButton.classList.add("hidden");
     stopForegroundMessages?.();
     stopForegroundMessages = null;
@@ -269,6 +410,7 @@ onAuthStateChanged(auth, user => {
   loginView.classList.add("hidden");
   chatView.classList.remove("hidden");
   signOutButton.classList.remove("hidden");
+  gameButton.classList.remove("hidden");
   notificationButton.classList.remove("hidden");
   notificationButton.disabled = false;
   notificationButton.textContent = "Checking notifications…";
@@ -277,6 +419,13 @@ onAuthStateChanged(auth, user => {
   presenceStatus.textContent = "Checking who is here…";
   presenceStatus.classList.remove("is-online");
   startPresenceTracking(user);
+  stopGameListener = onSnapshot(gameRef, snapshot => {
+    currentGame = snapshot.exists() ? snapshot.data() : null;
+    renderGame();
+  }, error => {
+    gameStatus.textContent = "Could not load the game.";
+    connectionStatus.textContent = error.message;
+  });
   firstSnapshot = true;
   const recentMessages = query(collection(db, "notes"), orderBy("createdAt", "desc"), limit(100));
   stopMessages = onSnapshot(recentMessages, snapshot => {

@@ -35,6 +35,33 @@ service cloud.firestore {
       allow delete: if isUs();
     }
 
+    match /games/{gameId} {
+      allow read: if isUs() && gameId == 'ticTacToe';
+      allow create: if isUs()
+        && gameId == 'ticTacToe'
+        && request.resource.data.keys().hasOnly(['board', 'xUid', 'oUid', 'turnUid', 'winnerUid', 'status', 'updatedAt'])
+        && request.resource.data.keys().hasAll(['board', 'xUid', 'oUid', 'turnUid', 'winnerUid', 'status', 'updatedAt'])
+        && request.resource.data.board is list
+        && request.resource.data.board.size() == 9
+        && request.resource.data.xUid == request.auth.uid
+        && request.resource.data.oUid == null
+        && request.resource.data.status == 'waiting'
+        && request.resource.data.updatedAt is timestamp;
+      allow update: if isUs()
+        && gameId == 'ticTacToe'
+        && request.resource.data.keys().hasOnly(['board', 'xUid', 'oUid', 'turnUid', 'winnerUid', 'status', 'updatedAt'])
+        && request.resource.data.keys().hasAll(['board', 'xUid', 'oUid', 'turnUid', 'winnerUid', 'status', 'updatedAt'])
+        && request.resource.data.board is list
+        && request.resource.data.board.size() == 9
+        && request.resource.data.xUid is string
+        && (request.resource.data.oUid == null || request.resource.data.oUid is string)
+        && (request.resource.data.turnUid == null || request.resource.data.turnUid is string)
+        && (request.resource.data.winnerUid == null || request.resource.data.winnerUid is string)
+        && request.resource.data.status in ['waiting', 'playing', 'won', 'draw']
+        && request.resource.data.updatedAt is timestamp;
+      allow delete: if false;
+    }
+
     match /presence/{email}/sessions/{sessionId} {
       allow read: if isUs();
       allow create, update: if isUs()

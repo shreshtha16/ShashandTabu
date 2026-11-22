@@ -24,6 +24,7 @@
     </div>
     <div class="header-tools">
       <button class="header-action" id="installButton" type="button" aria-label="Add chat to home screen" title="Add chat to home screen">Install</button>
+      <button class="header-action hidden" id="gameButton" type="button">Play</button>
       <button class="header-action hidden" id="notificationButton" type="button">Enable notifications</button>
       <button class="signout hidden" id="signOutButton" type="button">Sign out</button>
     </div>
@@ -64,6 +65,17 @@
   <h2 id="installTitle">Add our chat to your Home Screen</h2>
   <p id="installInstructions">Open your browser menu and choose “Add to Home Screen”.</p>
   <button class="send-button" id="installDone" type="button">Got it</button>
+</dialog>
+<dialog class="game-dialog" id="gameDialog" aria-labelledby="gameTitle">
+  <button class="dialog-close" id="gameClose" type="button" aria-label="Close game">×</button>
+  <p class="eyebrow">A little friendly rivalry</p>
+  <h2 id="gameTitle">Tic-tac-toe</h2>
+  <p class="game-status" id="gameStatus" aria-live="polite">Start a game and invite the other player.</p>
+  <div class="game-board" id="gameBoard" role="group" aria-label="Tic-tac-toe board"></div>
+  <div class="game-actions">
+    <button class="send-button" id="startGameButton" type="button">Start a game</button>
+    <button class="send-button hidden" id="joinGameButton" type="button">Join as O</button>
+  </div>
 </dialog>
 <script type="module" src="chat.js"></script>
 </body>
